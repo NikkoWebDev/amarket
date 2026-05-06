@@ -30,26 +30,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleSubmit} className="login-form">
-        <h2>Iniciar Sesión</h2>
-        {error && <div className="error-msg">{error}</div>}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Ingresar</button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-petal px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-soft-lg border border-petal-100/80 animate-float-up">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-petal-400 to-blush-500 flex items-center justify-center shadow-soft-md">
+              <svg viewBox="0 0 32 32" fill="none" className="w-8 h-8 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="26" height="26" rx="6" />
+                <path d="M12 12h8M12 18h8" />
+              </svg>
+            </div>
+            <h1 className="font-display text-2xl text-mist-800 mb-2">Bienvenido</h1>
+            <p className="text-sm text-mist-400 font-body">Inicia sesión en tu cuenta</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-50 border border-red-100 rounded-2xl p-3 text-red-500 text-xs font-body text-center">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-mist-600 font-body mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="tu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 placeholder:text-mist-300 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-mist-600 font-body mb-2">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 placeholder:text-mist-300 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-petal-400 to-blush-500 text-white text-sm font-semibold font-body shadow-soft-md hover:shadow-glow-petal transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              Iniciar Sesión
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-[11px] text-mist-400 font-body">
+              Credenciales demo: admin@sistema.com / admin123
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

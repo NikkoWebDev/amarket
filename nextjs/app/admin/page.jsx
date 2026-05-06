@@ -102,108 +102,257 @@ export default function AdminDashboard() {
   if (loading || !user) return null;
 
   return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>Panel de Administrador</h1>
-        <div className="header-info">
-          <span>{user.nombre}</span>
-          <button onClick={logout} className="btn-logout">Cerrar Sesión</button>
+    <div className="min-h-screen p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="font-display text-3xl text-mist-800 mb-2">Panel de Administrador</h1>
+          <p className="text-sm text-mist-400 font-body">Gestión de usuarios, proyectos y asignaciones</p>
         </div>
-      </header>
 
-      {message && <div className="notification">{message}</div>}
+      {message && (
+        <div className="mb-6 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-emerald-600 text-sm font-body text-center">
+          {message}
+        </div>
+      )}
 
-      <div className="tabs">
-        <button className={tab === 'users' ? 'active' : ''} onClick={() => setTab('users')}>Usuarios</button>
-        <button className={tab === 'projects' ? 'active' : ''} onClick={() => setTab('projects')}>Proyectos</button>
-        <button className={tab === 'assign' ? 'active' : ''} onClick={() => setTab('assign')}>Asignaciones</button>
+      <div className="flex gap-2 mb-6 bg-white/70 backdrop-blur-sm rounded-2xl p-1 border border-petal-100/80 shadow-soft">
+        <button 
+          className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold font-body transition-all ${
+            tab === 'users' ? 'bg-petal-500 text-white shadow-soft-md' : 'text-mist-400 hover:bg-petal-50'
+          }`}
+          onClick={() => setTab('users')}
+        >
+          Usuarios
+        </button>
+        <button 
+          className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold font-body transition-all ${
+            tab === 'projects' ? 'bg-petal-500 text-white shadow-soft-md' : 'text-mist-400 hover:bg-petal-50'
+          }`}
+          onClick={() => setTab('projects')}
+        >
+          Proyectos
+        </button>
+        <button 
+          className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold font-body transition-all ${
+            tab === 'assign' ? 'bg-petal-500 text-white shadow-soft-md' : 'text-mist-400 hover:bg-petal-50'
+          }`}
+          onClick={() => setTab('assign')}
+        >
+          Asignaciones
+        </button>
       </div>
 
       {tab === 'users' && (
-        <div className="panel">
-          <h3>Crear Usuario</h3>
-          <form onSubmit={handleCreateUser} className="admin-form">
-            <input placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
-            <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            <input type="password" placeholder="Contraseña" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-            <select value={form.rol} onChange={(e) => setForm({ ...form, rol: e.target.value })}>
-              <option value="empleado">Empleado</option>
-              <option value="cliente">Cliente</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button type="submit">Crear</button>
-          </form>
+        <div className="space-y-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
+            <h3 className="font-display text-lg text-mist-800 mb-4">Crear Usuario</h3>
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Nombre</label>
+                <input 
+                  placeholder="Nombre completo" 
+                  value={form.nombre} 
+                  onChange={(e) => setForm({ ...form, nombre: e.target.value })} 
+                  required 
+                  className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 placeholder:text-mist-300 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Email</label>
+                <input 
+                  type="email" 
+                  placeholder="Email" 
+                  value={form.email} 
+                  onChange={(e) => setForm({ ...form, email: e.target.value })} 
+                  required 
+                  className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 placeholder:text-mist-300 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Contraseña</label>
+                <input 
+                  type="password" 
+                  placeholder="Contraseña" 
+                  value={form.password} 
+                  onChange={(e) => setForm({ ...form, password: e.target.value })} 
+                  required 
+                  className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 placeholder:text-mist-300 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Rol</label>
+                <select 
+                  value={form.rol} 
+                  onChange={(e) => setForm({ ...form, rol: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+                >
+                  <option value="empleado">Empleado</option>
+                  <option value="cliente">Cliente</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <button 
+                type="submit" 
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-petal-400 to-blush-500 text-white text-sm font-semibold font-body shadow-soft-md hover:shadow-glow-petal transition-all duration-300 hover:scale-105 active:scale-95"
+              >
+                Crear Usuario
+              </button>
+            </form>
+          </div>
 
-          <h3>Lista de Usuarios</h3>
-          <table className="data-table">
-            <thead>
-              <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th></tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id_usuario}>
-                  <td>{u.id_usuario}</td><td>{u.nombre}</td><td>{u.email}</td><td>{u.rol}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
+            <h3 className="font-display text-lg text-mist-800 mb-4">Lista de Usuarios ({users.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-mist-100">
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">ID</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Nombre</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Email</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Rol</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id_usuario} className="border-b border-mist-50 hover:bg-mist-50/50">
+                      <td className="py-3 text-sm text-mist-700 font-body">{u.id_usuario}</td>
+                      <td className="py-3 text-sm text-mist-700 font-body">{u.nombre}</td>
+                      <td className="py-3 text-sm text-mist-700 font-body">{u.email}</td>
+                      <td className="py-3">
+                        <span className={`text-[10px] font-semibold px-2 py-1 rounded-full font-body ${
+                          u.rol === 'admin' ? 'bg-lavender-100 text-lavender-600' :
+                          u.rol === 'empleado' ? 'bg-sky-100 text-sky-600' :
+                          'bg-amber-100 text-amber-600'
+                        }`}>
+                          {u.rol}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
       {tab === 'projects' && (
-        <div className="panel">
-          <h3>Crear Proyecto</h3>
-          <form onSubmit={handleCreateProject} className="admin-form">
-            <input placeholder="Título del proyecto" value={projForm.titulo} onChange={(e) => setProjForm({ ...projForm, titulo: e.target.value })} required />
-            <select value={projForm.id_cliente} onChange={(e) => setProjForm({ ...projForm, id_cliente: e.target.value })} required>
-              <option value="">Seleccionar cliente</option>
-              {clientes.map((c) => (
-                <option key={c.id_usuario} value={c.id_usuario}>{c.nombre} ({c.email})</option>
-              ))}
-            </select>
-            <button type="submit">Crear Proyecto</button>
-          </form>
+        <div className="space-y-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
+            <h3 className="font-display text-lg text-mist-800 mb-4">Crear Proyecto</h3>
+            <form onSubmit={handleCreateProject} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Título del proyecto</label>
+                <input 
+                  placeholder="Título del proyecto" 
+                  value={projForm.titulo} 
+                  onChange={(e) => setProjForm({ ...projForm, titulo: e.target.value })} 
+                  required 
+                  className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 placeholder:text-mist-300 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Cliente</label>
+                <select 
+                  value={projForm.id_cliente} 
+                  onChange={(e) => setProjForm({ ...projForm, id_cliente: e.target.value })} 
+                  required
+                  className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+                >
+                  <option value="">Seleccionar cliente</option>
+                  {clientes.map((c) => (
+                    <option key={c.id_usuario} value={c.id_usuario}>{c.nombre} ({c.email})</option>
+                  ))}
+                </select>
+              </div>
+              <button 
+                type="submit" 
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-petal-400 to-blush-500 text-white text-sm font-semibold font-body shadow-soft-md hover:shadow-glow-petal transition-all duration-300 hover:scale-105 active:scale-95"
+              >
+                Crear Proyecto
+              </button>
+            </form>
+          </div>
 
-          <h3>Proyectos</h3>
-          <table className="data-table">
-            <thead>
-              <tr><th>ID</th><th>Título</th><th>Cliente</th><th>Creado</th><th>Acciones</th></tr>
-            </thead>
-            <tbody>
-              {projects.map((p) => (
-                <tr key={p.id_proyecto}>
-                  <td>{p.id_proyecto}</td>
-                  <td>{p.titulo}</td>
-                  <td>{p.nombre_cliente}</td>
-                  <td>{new Date(p.fecha_creacion).toLocaleDateString()}</td>
-                  <td><button onClick={() => handleDeleteProject(p.id_proyecto)} className="btn-danger">Eliminar</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
+            <h3 className="font-display text-lg text-mist-800 mb-4">Proyectos ({projects.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-mist-100">
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">ID</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Título</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Cliente</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Creado</th>
+                    <th className="text-left text-xs font-semibold text-mist-600 font-body pb-3">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((p) => (
+                    <tr key={p.id_proyecto} className="border-b border-mist-50 hover:bg-mist-50/50">
+                      <td className="py-3 text-sm text-mist-700 font-body">{p.id_proyecto}</td>
+                      <td className="py-3 text-sm text-mist-700 font-body">{p.titulo}</td>
+                      <td className="py-3 text-sm text-mist-700 font-body">{p.nombre_cliente}</td>
+                      <td className="py-3 text-sm text-mist-700 font-body">{new Date(p.fecha_creacion).toLocaleDateString()}</td>
+                      <td className="py-3">
+                        <button 
+                          onClick={() => handleDeleteProject(p.id_proyecto)} 
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold font-body bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
       {tab === 'assign' && (
-        <div className="panel">
-          <h3>Asignar Empleado a Proyecto</h3>
-          <form onSubmit={handleAssign} className="admin-form">
-            <select value={assignForm.id_proyecto} onChange={(e) => setAssignForm({ ...assignForm, id_proyecto: e.target.value })} required>
-              <option value="">Seleccionar proyecto</option>
-              {projects.map((p) => (
-                <option key={p.id_proyecto} value={p.id_proyecto}>{p.titulo}</option>
-              ))}
-            </select>
-            <select value={assignForm.id_empleado} onChange={(e) => setAssignForm({ ...assignForm, id_empleado: e.target.value })} required>
-              <option value="">Seleccionar empleado</option>
-              {empleados.map((emp) => (
-                <option key={emp.id_usuario} value={emp.id_usuario}>{emp.nombre} ({emp.email})</option>
-              ))}
-            </select>
-            <button type="submit">Asignar</button>
+        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
+          <h3 className="font-display text-lg text-mist-800 mb-4">Asignar Empleado a Proyecto</h3>
+          <form onSubmit={handleAssign} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Proyecto</label>
+              <select 
+                value={assignForm.id_proyecto} 
+                onChange={(e) => setAssignForm({ ...assignForm, id_proyecto: e.target.value })} 
+                required
+                className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+              >
+                <option value="">Seleccionar proyecto</option>
+                {projects.map((p) => (
+                  <option key={p.id_proyecto} value={p.id_proyecto}>{p.titulo}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-mist-600 font-body mb-2">Empleado</label>
+              <select 
+                value={assignForm.id_empleado} 
+                onChange={(e) => setAssignForm({ ...assignForm, id_empleado: e.target.value })} 
+                required
+                className="w-full px-4 py-3 rounded-2xl bg-canvas-100 border border-petal-100/80 text-sm font-body text-mist-700 outline-none focus:ring-2 focus:ring-petal-200 focus:border-petal-300 transition-all shadow-inner-soft"
+              >
+                <option value="">Seleccionar empleado</option>
+                {empleados.map((emp) => (
+                  <option key={emp.id_usuario} value={emp.id_usuario}>{emp.nombre} ({emp.email})</option>
+                ))}
+              </select>
+            </div>
+            <button 
+              type="submit" 
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-petal-400 to-blush-500 text-white text-sm font-semibold font-body shadow-soft-md hover:shadow-glow-petal transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              Asignar
+            </button>
           </form>
         </div>
       )}
+      </div>
     </div>
   );
 }
