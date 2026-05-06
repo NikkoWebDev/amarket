@@ -17,18 +17,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Rol inválido' }, { status: 400 });
     }
 
-    const [existing] = await pool.query('SELECT id_usuario FROM Usuarios WHERE email = ?', [email]);
-    if (existing.length > 0) {
+    const existingResult = await pool.query('SELECT id_usuario FROM usuarios WHERE email = $1', [email]);
+    if (existingResult.rows.length > 0) {
       return NextResponse.json({ error: 'El email ya está registrado' }, { status: 409 });
     }
 
     const hash = await bcrypt.hash(password, 10);
-    const [result] = await pool.query(
-      'INSERT INTO Usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)',
+    const result = await pool.query(
+      'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
       [nombre, email, hash, rol]
     );
 
-    return NextResponse.json({ id_usuario: result.insertId, nombre, email, rol }, { status: 201 });
+    return NextResponse.json({ id_usuario: result.rows[0].id_usuario, nombre, email, rol }, { status: 201 });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

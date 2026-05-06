@@ -10,12 +10,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Email y password son obligatorios' }, { status: 400 });
     }
 
-    const [rows] = await pool.query('SELECT * FROM Usuarios WHERE email = ?', [email]);
-    if (rows.length === 0) {
+    const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
     }
 
-    const user = rows[0];
+    const user = result.rows[0];
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });

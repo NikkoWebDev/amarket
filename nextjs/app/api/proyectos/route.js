@@ -8,32 +8,32 @@ export async function GET(request) {
     if (!user) return NextResponse.json({ error: 'Token no proporcionado' }, { status: 401 });
 
     const { id_usuario, rol } = user;
-    let rows;
+    let result;
 
     if (rol === 'admin') {
-      [rows] = await pool.query(`
+      result = await pool.query(`
         SELECT p.*, u.nombre AS nombre_cliente
         FROM proyecto p
-        JOIN Usuarios u ON u.id_usuario = p.id_cliente
+        JOIN usuarios u ON u.id_usuario = p.id_cliente
       `);
     } else if (rol === 'cliente') {
-      [rows] = await pool.query(`
+      result = await pool.query(`
         SELECT p.*, u.nombre AS nombre_cliente
         FROM proyecto p
-        JOIN Usuarios u ON u.id_usuario = p.id_cliente
-        WHERE p.id_cliente = ?
+        JOIN usuarios u ON u.id_usuario = p.id_cliente
+        WHERE p.id_cliente = $1
       `, [id_usuario]);
     } else if (rol === 'empleado') {
-      [rows] = await pool.query(`
+      result = await pool.query(`
         SELECT p.*, u.nombre AS nombre_cliente
         FROM proyecto p
-        JOIN Usuarios u ON u.id_usuario = p.id_cliente
-        JOIN Asignaciones a ON a.id_proyecto = p.id_proyecto
-        WHERE a.id_empleado = ?
+        JOIN usuarios u ON u.id_usuario = p.id_cliente
+        JOIN asignaciones a ON a.id_proyecto = p.id_proyecto
+        WHERE a.id_empleado = $1
       `, [id_usuario]);
     }
 
-    return NextResponse.json(rows);
+    return NextResponse.json(result.rows);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -50,40 +50,45 @@ export async function POST(request) {
       return NextResponse.json({ error: 'titulo e id_cliente son obligatorios' }, { status: 400 });
     }
 
-    const [clienteRows] = await pool.query(
-      'SELECT id_usuario FROM Usuarios WHERE id_usuario = ? AND rol = "cliente"',
+    const clienteResult = await pool.query(
+      'SELECT id_usuario FROM usuarios WHERE id_usuario = $1 AND rol = \'cliente\'',
       [id_cliente]
     );
-    if (clienteRows.length === 0) {
+    if (clienteResult.rows.length === 0) {
       return NextResponse.json({ error: 'El id_cliente no corresponde a un usuario con rol cliente' }, { status: 400 });
     }
 
-    const conn = await pool.getConnection();
-    await conn.beginTransaction();
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    const [result] = await conn.query(
-      'INSERT INTO proyecto (titulo, id_cliente, id_admin) VALUES (?, ?, ?)',
-      [titulo, id_cliente, authUser.id_usuario]
-    );
-    const id_proyecto = result.insertId;
-
-    const etapasDefault = [
-      { num_etapa: 1, descripcion: 'Etapa 1 - Planificación' },
-      { num_etapa: 2, descripcion: 'Etapa 2 - Diseño' },
-      { num_etapa: 3, descripcion: 'Etapa 3 - Desarrollo' },
-      { num_etapa: 4, descripcion: 'Etapa 4 - Entrega' },
-    ];
-    for (const etapa of etapasDefault) {
-      await conn.query(
-        'INSERT INTO Etapa (id_proyecto, num_etapa, descripcion, estado) VALUES (?, ?, ?, "pendiente")',
-        [id_proyecto, etapa.num_etapa, etapa.descripcion]
+      const result = await client.query(
+        'INSERT INTO proyecto (titulo, id_cliente, id_admin) VALUES ($1, $2, $3) RETURNING id_proyecto',
+        [titulo, id_cliente, authUser.id_usuario]
       );
+      const id_proyecto = result.rows[0].id_proyecto;
+
+      const etapasDefault = [
+        { num_etapa: 1, descripcion: 'Etapa 1 - Planificación' },
+        { num_etapa: 2, descripcion: 'Etapa 2 - Diseño' },
+        { num_etapa: 3, descripcion: 'Etapa 3 - Desarrollo' },
+        { num_etapa: 4, descripcion: 'Etapa 4 - Entrega' },
+      ];
+      for (const etapa of etapasDefault) {
+        await client.query(
+          'INSERT INTO etapa (id_proyecto, num_etapa, descripcion, estado) VALUES ($1, $2, $3, \'pendiente\')',
+          [id_proyecto, etapa.num_etapa, etapa.descripcion]
+        );
+      }
+
+      await client.query('COMMIT');
+      return NextResponse.json({ id_proyecto, titulo, id_cliente, id_admin: authUser.id_usuario }, { status: 201 });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
-
-    await conn.commit();
-    conn.release();
-
-    return NextResponse.json({ id_proyecto, titulo, id_cliente, id_admin: authUser.id_usuario }, { status: 201 });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

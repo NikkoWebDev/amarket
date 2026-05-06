@@ -14,21 +14,21 @@ export async function PUT(request, context) {
       return NextResponse.json({ error: 'Estado inválido. Debe ser: pendiente, en_proceso, completado' }, { status: 400 });
     }
 
-    const [etapaRows] = await pool.query('SELECT * FROM Etapa WHERE id_etapa = ?', [id]);
-    if (etapaRows.length === 0) return NextResponse.json({ error: 'Etapa no encontrada' }, { status: 404 });
+    const etapaResult = await pool.query('SELECT * FROM etapa WHERE id_etapa = $1', [id]);
+    if (etapaResult.rows.length === 0) return NextResponse.json({ error: 'Etapa no encontrada' }, { status: 404 });
 
-    const etapa = etapaRows[0];
+    const etapa = etapaResult.rows[0];
 
     if (user.rol === 'empleado') {
-      const [asign] = await pool.query(
-        'SELECT 1 FROM Asignaciones WHERE id_proyecto = ? AND id_empleado = ?',
+      const asignResult = await pool.query(
+        'SELECT 1 FROM asignaciones WHERE id_proyecto = $1 AND id_empleado = $2',
         [etapa.id_proyecto, user.id_usuario]
       );
-      if (asign.length === 0) return NextResponse.json({ error: 'No estás asignado a este proyecto' }, { status: 403 });
+      if (asignResult.rows.length === 0) return NextResponse.json({ error: 'No estás asignado a este proyecto' }, { status: 403 });
     }
 
-    await pool.query('UPDATE Etapa SET estado = ? WHERE id_etapa = ?', [estado, id]);
-    await pool.query('UPDATE proyecto SET fecha_modificacion = NOW() WHERE id_proyecto = ?', [etapa.id_proyecto]);
+    await pool.query('UPDATE etapa SET estado = $1 WHERE id_etapa = $2', [estado, id]);
+    await pool.query('UPDATE proyecto SET fecha_modificacion = NOW() WHERE id_proyecto = $1', [etapa.id_proyecto]);
 
     return NextResponse.json({ message: 'Etapa actualizada', id_etapa: etapa.id_etapa, estado });
   } catch (err) {
