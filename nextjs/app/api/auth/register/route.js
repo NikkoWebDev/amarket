@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import pool from '@/lib/db';
 import { getUserFromRequest, requireRole } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+
 export async function POST(request) {
   try {
     const authUser = getUserFromRequest(request);

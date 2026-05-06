@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
 import { getUserFromRequest, requireRole } from '@/lib/auth';
+import pool from '@/lib/db';
+
+export const runtime = 'nodejs';
 
 export async function GET(request) {
   try {

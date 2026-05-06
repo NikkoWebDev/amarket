@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getUserFromRequest, requireRole } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+
 export async function GET(request, context) {
   try {
     const user = getUserFromRequest(request);
