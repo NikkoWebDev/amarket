@@ -39,7 +39,7 @@ export default function LoginPage() {
             <p className="text-sm text-mist-400 font-body">Inicia sesión en tu cuenta</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 login-form">
             {error && (
               <div className="bg-red-50 border border-red-100 rounded-2xl p-3 text-red-500 text-xs font-body text-center">
                 {error}
