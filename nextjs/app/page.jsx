@@ -34,13 +34,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-soft-lg border border-petal-100/80 animate-float-up">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-petal-400 to-blush-500 flex items-center justify-center shadow-soft-md">
-              <svg viewBox="0 0 32 32" fill="none" className="w-8 h-8 text-white" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="26" height="26" rx="6" />
-                <path d="M12 12h8M12 18h8" />
-              </svg>
-            </div>
-            <h1 className="font-display text-2xl text-mist-800 mb-2">Bienvenido</h1>
+            <img src="/logo.png" alt="BoomLab Logo" className="w-20 h-20 mx-auto mb-4 object-contain" />
+            <h1 className="font-display text-3xl text-mist-800 mb-2 font-bold">BoomLab</h1>
             <p className="text-sm text-mist-400 font-body">Inicia sesión en tu cuenta</p>
           </div>
 
