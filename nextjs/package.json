@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:seed": "node scripts/seed-db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
