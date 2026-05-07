@@ -4,7 +4,7 @@
   "description": "API REST para sistema de gestión de proyectos y comunicación con clientes",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/migrations/run.js && node src/migrations/seed.js && node src/index.js",
     "dev": "nodemon src/index.js",
     "migrate": "node src/migrations/run.js",
     "lint": "eslint src/"
