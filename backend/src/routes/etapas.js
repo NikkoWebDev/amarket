@@ -41,7 +41,8 @@ router.put('/:id_etapa', authMiddleware, requireRole('empleado', 'admin'), async
     await pool.query('UPDATE Etapa SET estado = ? WHERE id_etapa = ?', [estado, req.params.id_etapa]);
 
     // Actualizar fecha_modificacion del proyecto
-    await pool.query('UPDATE proyecto SET fecha_modificacion = NOW() WHERE id_proyecto = ?', [etapa.id_proyecto]);
+    // Use CURRENT_TIMESTAMP for PostgreSQL compatibility; works for MySQL as well.
+    await pool.query('UPDATE proyecto SET fecha_modificacion = CURRENT_TIMESTAMP WHERE id_proyecto = ?', [etapa.id_proyecto]);
 
     res.json({ message: 'Etapa actualizada', id_etapa: etapa.id_etapa, estado });
   } catch (err) {

@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const pool = require('../config/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
+const { generateText } = require('../services/openrouter');
 
 const router = Router();
 
@@ -17,6 +18,19 @@ router.get('/:id_proyecto', authMiddleware, async (req, res) => {
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// AI generated feedback based on project description
+router.post('/ai/:id_proyecto', authMiddleware, async (req, res) => {
+  try {
+    const { description } = req.body;
+    if (!description) return res.status(400).json({ error: 'description required' });
+    const aiResponse = await generateText(`Generate concise feedback for project ${req.params.id_proyecto}: ${description}`);
+    res.json({ aiFeedback: aiResponse });
+  } catch (err) {
+    console.error('AI error:', err);
+    res.status(500).json({ error: 'AI generation failed' });
   }
 });
 
