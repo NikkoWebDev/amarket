@@ -80,11 +80,35 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [usersRes, projectsRes] = await Promise.all([
-        api.get('/api/auth/users'),
-        api.get('/api/proyectos'),
-      ]);
+      // Load users for admin and reference
+      let usersRes = [];
+      if (user?.rol === 'admin') {
+        usersRes = await api.get('/api/auth/users');
+      }
       setUsers(usersRes);
+      
+      // Load projects based on role
+      let projectsRes = [];
+      if (user?.rol === 'admin') {
+        projectsRes = await api.get('/api/proyectos');
+      } else if (user?.rol === 'cliente') {
+        // Client sees only their projects
+        const allProjects = await api.get('/api/proyectos');
+        projectsRes = allProjects.filter(p => p.id_cliente === user.id);
+      } else if (user?.rol === 'empleado') {
+        // Employee sees assigned projects
+        try {
+          const assignments = await api.get('/api/asignaciones');
+          const assignedProjectIds = assignments
+            .filter(a => a.id_empleado === user.id)
+            .map(a => a.id_proyecto);
+          const allProjects = await api.get('/api/proyectos');
+          projectsRes = allProjects.filter(p => assignedProjectIds.includes(p.id));
+        } catch {
+          // If assignments endpoint fails, show empty
+          projectsRes = [];
+        }
+      }
       setProjects(projectsRes);
       
       // Calculate stats
@@ -264,8 +288,37 @@ export default function Dashboard() {
               />
             </section>
 
-            {/* Alert Section */}
-            {stats.active === 0 && stats.total > 0 && (
+            {/* Empty State for non-admins without projects */}
+            {stats.total === 0 && !isAdmin && (
+              <div className="glass-card border-l-4 border-l-petal-400 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-petal-100 rounded-full flex items-center justify-center text-petal-500 shrink-0">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-display text-xl text-mist-800">Sin Proyectos Asignados</h4>
+                    <p className="text-mist-500">
+                      {user.rol === 'cliente' 
+                        ? 'Aún no tienes proyectos. Contacta al administrador para crear uno.' 
+                        : 'No tienes proyectos asignados. Contacta al administrador.'}
+                    </p>
+                  </div>
+                </div>
+                {user.rol === 'cliente' && (
+                  <button 
+                    onClick={() => router.push('/proyectos')}
+                    className="text-petal-500 font-bold hover:underline px-4 py-2"
+                  >
+                    Solicitar Proyecto
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Alert Section - Admin only */}
+            {isAdmin && stats.active === 0 && stats.total > 0 && (
               <div className="glass-card border-l-4 border-l-petal-400 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-petal-100 rounded-full flex items-center justify-center text-petal-500 shrink-0 animate-pulse">
