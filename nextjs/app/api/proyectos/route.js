@@ -35,7 +35,17 @@ export async function GET(request) {
       `, [id_usuario]);
     }
 
-    return NextResponse.json(result.rows);
+    // Attach etapas to each project so KanbanBoard can group by stage
+    const projects = result.rows;
+    for (const proj of projects) {
+      const etapasResult = await pool.query(
+        'SELECT * FROM etapa WHERE id_proyecto = $1 ORDER BY num_etapa',
+        [proj.id_proyecto]
+      );
+      proj.etapas = etapasResult.rows;
+    }
+
+    return NextResponse.json(projects);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

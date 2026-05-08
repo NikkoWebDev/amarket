@@ -3,19 +3,20 @@
 import { useAuth } from "@/components/AuthProvider";
 import Navigation from "@/components/Navigation";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function NavigationWrapper({ children }) {
   const { user, logout } = useAuth();
   const [activeNav, setActiveNav] = useState("dashboard");
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
-  const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/';
+  const isLoginPage = pathname === '/';
 
   return (
     <div className="min-h-screen bg-gradient-petal">

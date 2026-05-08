@@ -4,16 +4,16 @@ const bcrypt = require('bcryptjs');
 async function seed() {
   const hash = await bcrypt.hash('admin123', 10);
 
-  if (process.env.INTERNAL_DATABASE_URL) {
+  if (process.env.INTERNAL_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL) {
     // PostgreSQL (Render)
     const { Pool } = require('pg');
     const pool = new Pool({
-      connectionString: process.env.INTERNAL_DATABASE_URL,
+      connectionString: process.env.INTERNAL_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL,
       ssl: { rejectUnauthorized: false },
     });
     try {
       await pool.query(
-        `INSERT INTO "Usuarios" ("nombre", "email", "password", "rol") VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING`,
+        `INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING`,
         ['Administrador', 'admin@sistema.com', hash, 'admin']
       );
       console.log('Usuario admin creado: admin@sistema.com / admin123');
@@ -34,10 +34,10 @@ async function seed() {
     });
     try {
       await connection.query(
-        `INSERT IGNORE INTO Usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)`,
+        `INSERT IGNORE INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)`,
         ['Administrador', 'admin@sistema.com', hash, 'admin']
       );
-      console.log('Usuario admin creado: admin@s://...');
+      console.log('Usuario admin creado: admin@sistema.com / admin123');
     } catch (err) {
       console.error('Error en seed (MySQL):', err.message);
     } finally {

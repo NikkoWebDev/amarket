@@ -1,15 +1,27 @@
-const { createClient } = require('openrouter');
+const axios = require('axios');
 
-const client = createClient({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseUrl: 'https://openrouter.ai/api/v1'
-});
-
-// Add AI service configuration
 const AI_SERVICE = {
   name: 'OpenRouter',
-  client: client,
-  model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet'
+  model: process.env.OPENROUTER_MODEL || 'tencent/hy3-preview:free',
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseUrl: 'https://openrouter.ai/api/v1',
 };
 
-module.exports = { client, AI_SERVICE };
+async function chatCompletion(messages) {
+  const response = await axios.post(
+    `${AI_SERVICE.baseUrl}/chat/completions`,
+    {
+      model: AI_SERVICE.model,
+      messages,
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${AI_SERVICE.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  return response.data;
+}
+
+module.exports = { AI_SERVICE, chatCompletion };
