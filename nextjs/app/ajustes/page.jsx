@@ -152,7 +152,7 @@ export default function Ajustes() {
   };
 
   const copyApiKey = () => {
-    navigator.clipboard.writeText('sk_live_51H...demo_key');
+    navigator.clipboard.writeText('DEMO_KEY_PLACEHOLDER');
     setMessage('API Key copiada al portaples');
     setTimeout(() => setMessage(''), 2000);
   };
@@ -467,7 +467,7 @@ export default function Ajustes() {
                     <div className="flex gap-2">
                       <input
                         type="password"
-                        placeholder="https://hooks.slack.com/services/..."
+                        placeholder="Ingresa tu webhook de Slack..."
                         value={integrations.slackWebhook}
                         onChange={(e) => setIntegrations({ ...integrations, slackWebhook: e.target.value })}
                         className="flex-1 px-4 py-3 rounded-xl bg-white/50 border border-petal-100/80 text-sm font-mono text-mist-700 outline-none focus:ring-2 focus:ring-petal-300"
