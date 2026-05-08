@@ -55,3 +55,42 @@ body {
   text-align: center;
   border: 1px solid #fcc;
 }
+
+/* Glassmorphism Components */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px -10px rgba(233, 80, 157, 0.1);
+}
+
+.mesh-gradient {
+  background:
+    radial-gradient(circle at top left, #ffd9e5 0%, #ffffff 40%),
+    radial-gradient(circle at bottom right, #eedcff 0%, #ffffff 40%),
+    radial-gradient(circle at center, #ffb0cf 0%, #fbf9f8 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 125, 178, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 125, 178, 0.5);
+}

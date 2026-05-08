@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import Navigation from "@/components/Navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function NavigationWrapper({ children }) {
@@ -10,6 +10,19 @@ export default function NavigationWrapper({ children }) {
   const [activeNav, setActiveNav] = useState("dashboard");
   const router = useRouter();
   const pathname = usePathname();
+
+  // Detect current route for active navigation
+  useEffect(() => {
+    if (pathname === '/admin') {
+      setActiveNav('dashboard');
+    } else if (pathname === '/proyectos') {
+      setActiveNav('kanban');
+    } else if (pathname === '/ajustes') {
+      setActiveNav('settings');
+    } else if (pathname === '/perfil') {
+      setActiveNav('settings'); // Profile under settings category
+    }
+  }, [pathname]);
 
   const handleLogout = () => {
     logout();
@@ -19,7 +32,7 @@ export default function NavigationWrapper({ children }) {
   const isLoginPage = pathname === '/';
 
   return (
-    <div className="min-h-screen bg-gradient-petal">
+    <div className="min-h-screen mesh-gradient">
       {user && !isLoginPage && (
         <Navigation 
           active={activeNav} 

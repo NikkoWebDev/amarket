@@ -53,7 +53,7 @@ const NAV_ITEMS = [
   { id: "kanban",    label: "Proyectos",  Icon: Icon.Kanban,   path: "/proyectos" },
   { id: "feedback",  label: "Feedback",   Icon: Icon.Chat,     path: "/proyectos" },
   { id: "ia",        label: "IA Insights",Icon: Icon.AI,       path: "#" },
-  { id: "settings",  label: "Ajustes",    Icon: Icon.Settings, path: "#" },
+  { id: "settings",  label: "Ajustes",    Icon: Icon.Settings, path: "/ajustes" },
   { id: "logout",    label: "Cerrar",     Icon: Icon.Logout,   path: null },
 ];
 
