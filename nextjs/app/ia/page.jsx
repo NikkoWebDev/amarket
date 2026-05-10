@@ -54,12 +54,12 @@ export default function IAPage() {
         projects = await api.get('/api/proyectos');
       } else if (user.rol === 'cliente') {
         const allProjects = await api.get('/api/proyectos');
-        projects = allProjects.filter(p => p.id_cliente === user.id);
+        projects = allProjects.filter(p => p.id_cliente === user.id_usuario);
       } else if (user.rol === 'empleado') {
         try {
           const assignments = await api.get('/api/asignaciones');
           const assignedProjectIds = assignments
-            .filter(a => a.id_empleado === user.id)
+            .filter(a => a.id_empleado === user.id_usuario)
             .map(a => a.id_proyecto);
           const allProjects = await api.get('/api/proyectos');
           projects = allProjects.filter(p => assignedProjectIds.includes(p.id));

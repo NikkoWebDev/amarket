@@ -94,13 +94,13 @@ export default function Dashboard() {
       } else if (user?.rol === 'cliente') {
         // Client sees only their projects
         const allProjects = await api.get('/api/proyectos');
-        projectsRes = allProjects.filter(p => p.id_cliente === user.id);
+        projectsRes = allProjects.filter(p => p.id_cliente === user.id_usuario);
       } else if (user?.rol === 'empleado') {
         // Employee sees assigned projects
         try {
           const assignments = await api.get('/api/asignaciones');
           const assignedProjectIds = assignments
-            .filter(a => a.id_empleado === user.id)
+            .filter(a => a.id_empleado === user.id_usuario)
             .map(a => a.id_proyecto);
           const allProjects = await api.get('/api/proyectos');
           projectsRes = allProjects.filter(p => assignedProjectIds.includes(p.id));

@@ -36,12 +36,12 @@ export default function FeedbackPage() {
         allProjects = await api.get('/api/proyectos');
       } else if (user.rol === 'cliente') {
         const projectsData = await api.get('/api/proyectos');
-        allProjects = projectsData.filter(p => p.id_cliente === user.id);
+        allProjects = projectsData.filter(p => p.id_cliente === user.id_usuario);
       } else if (user.rol === 'empleado') {
         try {
           const assignments = await api.get('/api/asignaciones');
           const assignedProjectIds = assignments
-            .filter(a => a.id_empleado === user.id)
+            .filter(a => a.id_empleado === user.id_usuario)
             .map(a => a.id_proyecto);
           const projectsData = await api.get('/api/proyectos');
           allProjects = projectsData.filter(p => assignedProjectIds.includes(p.id));
