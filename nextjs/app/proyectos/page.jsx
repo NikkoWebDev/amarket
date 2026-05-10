@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/apiClient';
 import KanbanBoard from '@/components/KanbanBoard';
 import FeedbackPanel from '@/components/FeedbackPanel';
-import AIChat from '@/components/AIChat';
 
 export default function ProyectosPage() {
   const { user, logout, loading } = useAuth();
@@ -100,9 +99,6 @@ export default function ProyectosPage() {
           </div>
         )}
       </div>
-      
-      {/* Chat IA - disponible en toda la página */}
-      <AIChat user={user} userRole={user.rol} />
     </div>
   );
 }
