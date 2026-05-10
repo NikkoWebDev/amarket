@@ -227,21 +227,6 @@ export default function FeedbackPanel({ feedback, idProyecto, userRole, onUpdate
             <p className="text-sm font-semibold text-mist-800 font-body">{activeThread.project}</p>
             <p className="text-[11px] text-mist-400 font-body">{activeThread.client}</p>
           </div>
-          <div className="flex gap-2">
-            <button className="w-8 h-8 rounded-xl bg-petal-50 hover:bg-petal-100
-                               text-petal-400 flex items-center justify-center transition-colors">
-              <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="8" cy="8" r="6" />
-                <path d="M8 5v3.5L7.5 8" />
-              </svg>
-            </button>
-            <button className="w-8 h-8 rounded-xl bg-lavender-50 hover:bg-lavender-100
-                               text-lavender-400 flex items-center justify-center transition-colors">
-              <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M14 10c0 .5-.5 1-1 1H4l-2 3V3c0-.5.5-1 1-1h10c.5 0 1 .5 1 1v7z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* Messages */}
@@ -294,13 +279,6 @@ export default function FeedbackPanel({ feedback, idProyecto, userRole, onUpdate
                 style={{ minHeight: "22px" }}
               />
               <div className="flex items-center gap-1.5 mb-0.5">
-                <button className="w-7 h-7 rounded-xl hover:bg-petal-50
-                                   text-mist-300 hover:text-petal-400 flex items-center justify-center transition-colors">
-                  <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                    <circle cx="8" cy="8" r="6.5" />
-                    <path d="M5.5 10s.9 1.5 2.5 1.5 2.5-1.5 2.5-1.5M5.5 6.5v.01M10.5 6.5v.01" />
-                  </svg>
-                </button>
                 <button
                   onClick={handleSend}
                   disabled={!input.trim()}

@@ -112,24 +112,27 @@ export default function AIChat({ user, userRole }) {
     try {
       // Preparar el contexto seguro
       const secureContext = generateSecureContext();
-      
-      // Construir el prompt seguro
-      const securePrompt = buildSecurePrompt(userMessage.content, secureContext);
 
-      // TODO: Integrar con API de IA (OpenAI, Claude, etc.)
-      // Por ahora, simulamos una respuesta inteligente basada en el contexto
-      const response = await simulateAIResponse(securePrompt, secureContext);
+      // Llamar a la API de backend
+      const response = await api.post('/api/ai/chat', {
+        message: userMessage.content,
+        context: secureContext
+      });
 
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: response,
+        content: response.response,
         timestamp: new Date()
       }]);
     } catch (err) {
       console.error('Error en chat IA:', err);
+      // Fallback a respuesta local si la API falla
+      const secureContext = generateSecureContext();
+      const fallbackResponse = generateLocalResponse(userMessage.content, secureContext);
+      
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Lo siento, ocurrió un error al procesar tu consulta. Por favor intenta de nuevo.',
+        content: fallbackResponse,
         timestamp: new Date()
       }]);
     } finally {
@@ -163,14 +166,12 @@ Instrucciones importantes de seguridad:
 5. Mantén las respuestas profesionales y enfocadas en los proyectos del usuario.`;
   };
 
-  const simulateAIResponse = async (prompt, context) => {
-    // Simular delay de API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
+  const generateLocalResponse = (prompt, context) => {
+    // Fallback local cuando la API no está disponible
     const query = prompt.toLowerCase();
-    const { projects, userRole, totalProjects, pendingProjects, activeProjects, completedProjects } = context;
+    const { projects, userRole, totalProjects, pendingProjects, activeProjects, completedProjects, userName } = context;
 
-    // Respuestas simuladas inteligentes basadas en el contexto
+    // Respuestas locales basadas en el contexto
     if (query.includes('cuántos proyectos') || query.includes('cuantos proyectos') || query.includes('total')) {
       if (userRole === 'admin') {
         return `Como administrador, tienes visibilidad de ${totalProjects} proyectos en total:\n- ${pendingProjects} pendientes\n- ${activeProjects} en proceso\n- ${completedProjects} completados`;
@@ -200,7 +201,7 @@ Instrucciones importantes de seguridad:
     }
 
     if (query.includes('hola') || query.includes('buenos días') || query.includes('buenas')) {
-      return `¡Hola ${context.userName}! Estoy aquí para ayudarte con información sobre tus proyectos. ¿Qué necesitas saber?`;
+      return `¡Hola ${userName}! Estoy aquí para ayudarte con información sobre tus proyectos. ¿Qué necesitas saber?`;
     }
 
     if (query.includes('ayuda') || query.includes('qué puedes hacer') || query.includes('que puedes hacer')) {

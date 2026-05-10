@@ -7,6 +7,7 @@ const proyectosRoutes = require('./routes/proyectos');
 const etapasRoutes = require('./routes/etapas');
 const asignacionesRoutes = require('./routes/asignaciones');
 const feedbackRoutes = require('./routes/feedback');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/proyectos', proyectosRoutes);
 app.use('/api/etapas', etapasRoutes);
 app.use('/api/asignaciones', asignacionesRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
