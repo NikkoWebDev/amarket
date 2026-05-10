@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/apiClient';
 import KanbanBoard from '@/components/KanbanBoard';
 import FeedbackPanel from '@/components/FeedbackPanel';
-import PendingTasksTable from '@/components/PendingTasksTable';
+import ProjectsTable from '@/components/ProjectsTable';
 import AIChat from '@/components/AIChat';
 
 export default function ProyectosPage() {
@@ -57,8 +57,8 @@ export default function ProyectosPage() {
 
         {!selectedProject ? (
           <div className="space-y-6">
-            {/* Tabla de trabajos pendientes */}
-            <PendingTasksTable user={user} userRole={user.rol} />
+            {/* Tabla de trabajos con filtros */}
+            <ProjectsTable user={user} userRole={user.rol} />
 
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
               <h3 className="font-display text-lg text-mist-800 mb-4">Selecciona un proyecto</h3>

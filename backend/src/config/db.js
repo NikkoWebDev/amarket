@@ -4,11 +4,12 @@
 
 let pool;
 let isPostgres = false;
-if (process.env.INTERNAL_DATABASE_URL) {
+const pgConnectionString = process.env.INTERNAL_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL;
+if (pgConnectionString) {
   // PostgreSQL connection using the pg library
   const { Pool } = require('pg');
   pool = new Pool({
-    connectionString: process.env.INTERNAL_DATABASE_URL,
+    connectionString: pgConnectionString,
     // Optional: SSL configuration for Render PostgreSQL
     ssl: { rejectUnauthorized: false },
   });
