@@ -1,0 +1,58 @@
+{
+	"mcpServers": {
+		"firebase": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"firebase-tools@14.15.2",
+				"experimental:mcp"
+			],
+			"disabled": true,
+			"alwaysAllow": []
+		},
+		"context7": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@upstash/context7-mcp"
+			],
+			"env": {
+				"DEFAULT_MINIMUM_TOKENS": ""
+			}
+		},
+		"github": {
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"-e",
+				"GITHUB_PERSONAL_ACCESS_TOKEN",
+				"-e",
+				"GITHUB_TOOLSETS",
+				"-e",
+				"GITHUB_READ_ONLY",
+				"ghcr.io/github/github-mcp-server"
+			],
+			"env": {
+				"GITHUB_PERSONAL_ACCESS_TOKEN": "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",
+				"GITHUB_TOOLSETS": "",
+				"GITHUB_READ_ONLY": ""
+			}
+		},
+		"sequentialthinking": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-sequential-thinking"
+			]
+		},
+		"puppeteer": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-puppeteer"
+			]
+		}
+	}
+}

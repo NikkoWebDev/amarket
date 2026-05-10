@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/apiClient';
 import KanbanBoard from '@/components/KanbanBoard';
 import FeedbackPanel from '@/components/FeedbackPanel';
+import PendingTasksTable from '@/components/PendingTasksTable';
+import AIChat from '@/components/AIChat';
 
 export default function ProyectosPage() {
   const { user, logout, loading } = useAuth();
@@ -54,9 +56,13 @@ export default function ProyectosPage() {
         </div>
 
         {!selectedProject ? (
-          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
-            <h3 className="font-display text-lg text-mist-800 mb-4">Selecciona un proyecto</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-6">
+            {/* Tabla de trabajos pendientes */}
+            <PendingTasksTable user={user} userRole={user.rol} />
+
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-soft border border-petal-100/80">
+              <h3 className="font-display text-lg text-mist-800 mb-4">Selecciona un proyecto</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects.map((p) => (
                 <div
                   key={p.id_proyecto}
@@ -92,6 +98,7 @@ export default function ProyectosPage() {
               )}
             </div>
           </div>
+        </div>
         ) : (
           <div className="space-y-6">
             <button
@@ -133,6 +140,9 @@ export default function ProyectosPage() {
           </div>
         )}
       </div>
+      
+      {/* Chat IA - disponible en toda la página */}
+      <AIChat user={user} userRole={user.rol} />
     </div>
   );
 }
