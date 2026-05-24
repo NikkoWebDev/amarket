@@ -1,7 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
-import NavigationWrapper from "@/components/NavigationWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Gestión de Proyectos",
-  description: "Sistema de gestión de proyectos y comunicación con clientes",
+  title: "BoomLab | Innovación y estilo que marca tendencia",
+  description: "Campañas publicitarias creativas e innovadoras para marcas y emprendedores de Sogamoso y Boyacá.",
 };
 
 export default function RootLayout({ children }) {
@@ -23,7 +22,7 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
-          <NavigationWrapper>{children}</NavigationWrapper>
+          {children}
         </AuthProvider>
       </body>
     </html>

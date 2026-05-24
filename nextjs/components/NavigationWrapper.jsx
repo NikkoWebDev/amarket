@@ -29,11 +29,11 @@ export default function NavigationWrapper({ children }) {
     router.push('/');
   };
 
-  const isLoginPage = pathname === '/';
+  const isPublicPage = pathname === '/' || pathname === '/login';
 
   return (
     <div className="min-h-screen mesh-gradient">
-      {user && !isLoginPage && (
+      {user && !isPublicPage && (
         <Navigation 
           active={activeNav} 
           onChange={setActiveNav} 
@@ -41,7 +41,7 @@ export default function NavigationWrapper({ children }) {
           onLogout={handleLogout}
         />
       )}
-      <div className={user && !isLoginPage ? "pb-24" : ""}>
+      <div className={user && !isPublicPage ? "pb-24" : ""}>
         {children}
       </div>
     </div>
