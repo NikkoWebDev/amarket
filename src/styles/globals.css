@@ -113,16 +113,9 @@ body.menu-open {
   flex: 0 0 auto;
   width: 36px;
   height: 36px;
-  display: grid;
-  place-items: center;
   border-radius: 50%;
-  padding: .5rem;
-  background: var(--wine);
-  color: white;
+  object-fit: cover;
 }
-
-.brand-logo svg, .mark svg { display: block; width: 100%; height: 100%; }
-.brand-logo path, .mark path { fill: none; stroke: currentColor; stroke-width: 7; stroke-linecap: round; }
 
 .landing-brand span:last-child {
   font-family: 'Playfair Display', serif;
@@ -289,10 +282,8 @@ body.menu-open {
   width: 88px;
   height: 88px;
   margin: auto;
-  padding: 1.35rem;
   border-radius: 50%;
-  background: radial-gradient(circle at 34% 20%, #b10029, var(--wine));
-  color: white;
+  object-fit: cover;
   box-shadow: 0 16px 36px rgba(147,0,31,.23);
 }
 
