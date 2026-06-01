@@ -1,0 +1,98 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Ajustes - BoomLab" description="Configuración de cuenta">
+  <div id="ajustes-root" class="min-h-screen p-4 sm:p-6 lg:p-8" style="max-width: 1024px; margin: 0 auto;">
+    <div id="ajustes-app"></div>
+  </div>
+</DashboardLayout>
+
+<script>
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) window.location.href = '/login';
+
+const app = document.getElementById('ajustes-app');
+
+let activeSection = 'profile';
+let webNotifications = true;
+
+function render() {
+  app.innerHTML = `
+    <header style="margin-bottom: 2.5rem;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 2.25rem; color: #38324f; margin: 0 0 0.5rem;">Ajustes</h1>
+      <p style="color: #7d7599;">Gestiona tu cuenta y preferencias.</p>
+    </header>
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+      <div style="width: 100%;">
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+          <nav style="display: flex; flex-direction: column; gap: 0.25rem;">
+            <button onclick="activeSection='profile';render()" style="padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; background: ${activeSection === 'profile' ? '#fff0f7' : 'transparent'}; color: ${activeSection === 'profile' ? '#e9509d' : '#7d7599'}; font-weight: ${activeSection === 'profile' ? '600' : '400'}; cursor: pointer; text-align: left; font-size: 0.875rem;">
+              <span style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg viewBox="0 0 24 24" fill="none" style="width: 1.25rem; height: 1.25rem;" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Perfil
+              </span>
+            </button>
+            <button onclick="activeSection='notifications';render()" style="padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; background: ${activeSection === 'notifications' ? '#fff0f7' : 'transparent'}; color: ${activeSection === 'notifications' ? '#e9509d' : '#7d7599'}; font-weight: ${activeSection === 'notifications' ? '600' : '400'}; cursor: pointer; text-align: left; font-size: 0.875rem;">
+              <span style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg viewBox="0 0 24 24" fill="none" style="width: 1.25rem; height: 1.25rem;" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Notificaciones
+              </span>
+            </button>
+            <button onclick="activeSection='security';render()" style="padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; background: ${activeSection === 'security' ? '#fff0f7' : 'transparent'}; color: ${activeSection === 'security' ? '#e9509d' : '#7d7599'}; font-weight: ${activeSection === 'security' ? '600' : '400'}; cursor: pointer; text-align: left; font-size: 0.875rem;">
+              <span style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg viewBox="0 0 24 24" fill="none" style="width: 1.25rem; height: 1.25rem;" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.4 9.4"/><path d="m15.5 7.5 3 3L22 7l-3-3-1.5 1.5"/></svg>
+                Seguridad
+              </span>
+            </button>
+          </nav>
+        </div>
+      </div>
+      <div style="flex: 1;">
+        ${activeSection === 'profile' ? `
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <h2 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem; font-size: 1.5rem;">Información de Perfil</h2>
+            <div style="max-width: 28rem;">
+              <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Nombre</label>
+                <input type="text" id="set-nombre" value="${user.nombre || ''}" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;">
+              </div>
+              <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Email</label>
+                <input type="email" value="${user.email || ''}" disabled style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #7d7599; box-sizing: border-box;">
+              </div>
+              <button onclick="alert('Perfil actualizado')" style="padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(246,106,172,0.25);">Guardar Cambios</button>
+            </div>
+          </div>
+        ` : activeSection === 'notifications' ? `
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <h2 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem; font-size: 1.5rem;">Notificaciones Web</h2>
+            <div style="max-width: 28rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-radius: 1rem; background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.4);">
+                <div><p style="font-weight: 600; color: #38324f; margin: 0;">Notificaciones en el navegador</p><p style="font-size: 0.875rem; color: #7d7599; margin: 0;">Recibe alertas en tiempo real</p></div>
+                <label style="position: relative; display: inline-flex; align-items: center; cursor: pointer;">
+                  <input type="checkbox" ${webNotifications ? 'checked' : ''} onchange="webNotifications=this.checked" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                  <div style="width: 2.75rem; height: 1.5rem; background: ${webNotifications ? '#e9509d' : '#d0c8d8'}; border-radius: 999px; position: relative; transition: background 0.3s;">
+                    <div style="content: ''; position: absolute; top: 2px; left: ${webNotifications ? 'calc(100% - 18px)' : '2px'}; width: 1.25rem; height: 1.25rem; background: white; border-radius: 50%; transition: left 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        ` : `
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <h2 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem; font-size: 1.5rem;">Cambiar Contraseña</h2>
+            <form id="settings-password-form" style="max-width: 28rem; display: flex; flex-direction: column; gap: 1rem;">
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Contraseña Actual</label><input type="password" placeholder="••••••••" id="s-pw-current" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Nueva Contraseña</label><input type="password" placeholder="••••••••" id="s-pw-new" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Confirmar</label><input type="password" placeholder="••••••••" id="s-pw-confirm" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+              <button type="submit" style="align-self: flex-start; padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(246,106,172,0.25);">Actualizar Contraseña</button>
+            </form>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+render();
+</script>

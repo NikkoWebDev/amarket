@@ -1,0 +1,18 @@
+---
+export const prerender = false;
+import Layout from '@/layouts/Layout.astro';
+
+const url = Astro.url;
+const redirect = url.searchParams.get('redirect') || '/login';
+Astro.response.status = 301;
+Astro.response.headers.set('Location', redirect);
+---
+
+<Layout>
+  <p>Redirigiendo...</p>
+</Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  window.location.replace(params.get('redirect') || '/login');
+</script>

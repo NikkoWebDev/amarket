@@ -1,0 +1,169 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Asistente IA - BoomLab" description="Asistente de inteligencia artificial">
+  <div id="ia-root" class="min-h-screen p-4 sm:p-6" style="max-width: 1024px; margin: 0 auto;">
+    <div id="ia-app"></div>
+  </div>
+</DashboardLayout>
+
+<script>
+const API = window.location.origin + '/api';
+
+function api(url, opts = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers };
+  return fetch(url, { ...opts, headers }).then(async r => {
+    if (r.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; }
+    if (!r.ok) { const e = await r.json().catch(() => ({ error: 'Error' })); throw new Error(e.error || 'Error'); }
+    return r.json();
+  });
+}
+
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) window.location.href = '/login';
+
+const app = document.getElementById('ia-app');
+
+let messages = [];
+let input = '';
+let loadingAI = false;
+let userProjects = [];
+
+function getWelcomeMessage(role) {
+  if (role === 'admin') return "¡Hola! Soy tu asistente de IA para BoomLab. Como administrador, puedo ayudarte con información sobre todos los proyectos, usuarios y el estado general del sistema. ¿Qué necesitas saber?";
+  if (role === 'cliente') return "¡Hola! Soy tu asistente de IA para BoomLab. Estoy aquí para ayudarte con información sobre tus proyectos, su estado y cualquier duda que tengas. ¿En qué puedo ayudarte?";
+  return "¡Hola! Soy tu asistente de IA para BoomLab. Puedo ayudarte con información sobre los proyectos que tienes asignados, tus tareas pendientes y el estado de tus trabajos. ¿Qué necesitas?";
+}
+
+async function loadUserProjects() {
+  try {
+    let projects = [];
+    if (user.rol === 'admin') projects = await api(API + '/proyectos');
+    else if (user.rol === 'cliente') {
+      const all = await api(API + '/proyectos');
+      projects = all.filter(p => p.id_cliente === user.id_usuario);
+    } else if (user.rol === 'empleado') {
+      try {
+        const assignments = await api(API + '/asignaciones');
+        const ids = assignments.filter(a => a.id_empleado === user.id_usuario).map(a => a.id_proyecto);
+        const all = await api(API + '/proyectos');
+        projects = all.filter(p => ids.includes(p.id));
+      } catch { projects = []; }
+    }
+    userProjects = projects;
+  } catch (e) { console.error(e); }
+}
+
+function generateLocalResponse(prompt, context) {
+  const q = prompt.toLowerCase();
+  const { totalProjects, pendingProjects, activeProjects, completedProjects, userName, projects } = context;
+  if (q.includes('cuántos') || q.includes('cuantos') || q.includes('total')) {
+    return `Tienes ${totalProjects} proyectos:\n- ${pendingProjects} pendientes\n- ${activeProjects} en proceso\n- ${completedProjects} completados`;
+  }
+  if (q.includes('pendiente') || q.includes('falta') || q.includes('por hacer')) {
+    const p = projects.filter(x => x.estado === 'pendiente');
+    if (!p.length) return '¡Excelente! No tienes proyectos pendientes.';
+    return `Tienes ${p.length} pendientes:\n${p.map(x => `- ${x.titulo}`).join('\n')}`;
+  }
+  if (q.includes('activo') || q.includes('en proceso')) {
+    const a = projects.filter(x => x.estado === 'en_proceso');
+    if (!a.length) return 'No tienes proyectos activos actualmente.';
+    return `Estás trabajando en ${a.length} proyectos:\n${a.map(x => `- ${x.titulo}`).join('\n')}`;
+  }
+  if (q.includes('completado') || q.includes('terminado') || q.includes('finalizado')) {
+    const c = projects.filter(x => x.estado === 'completado');
+    if (!c.length) return 'Aún no tienes proyectos completados.';
+    return `Has completado ${c.length} proyectos:\n${c.map(x => `- ${x.titulo}`).join('\n')}`;
+  }
+  if (q.includes('hola') || q.includes('buenos días') || q.includes('buenas')) {
+    return `¡Hola ${userName}! Estoy aquí para ayudarte con información sobre tus proyectos. ¿Qué necesitas saber?`;
+  }
+  if (q.includes('ayuda') || q.includes('qué puedes hacer') || q.includes('que puedes hacer')) {
+    return `Puedo ayudarte con:\n- Consultar el estado de tus proyectos\n- Listar proyectos pendientes, activos o completados\n- Responder preguntas sobre tus proyectos asignados\n\nSolo tengo acceso a información de tus proyectos autorizados.`;
+  }
+  return `Entiendo tu consulta. Tienes ${totalProjects} proyectos (${pendingProjects} pendientes, ${activeProjects} activos, ${completedProjects} completados). ¿Te gustaría saber más detalles sobre algún proyecto específico?`;
+}
+
+async function handleSend() {
+  if (!input.trim() || loadingAI) return;
+  const userMsg = { role: 'user', content: input.trim(), timestamp: new Date() };
+  messages = [...messages, userMsg];
+  input = '';
+  loadingAI = true;
+  render();
+
+  const ctx = {
+    userRole: user.rol, userName: user.nombre,
+    totalProjects: userProjects.length,
+    pendingProjects: userProjects.filter(p => p.estado === 'pendiente').length,
+    activeProjects: userProjects.filter(p => p.estado === 'en_proceso').length,
+    completedProjects: userProjects.filter(p => p.estado === 'completado').length,
+    projects: userProjects.map(p => ({ id: p.id_proyecto, titulo: p.titulo, estado: p.estado, cliente: p.nombre_cliente }))
+  };
+
+  try {
+    const res = await api(API + '/ai/chat', {
+      method: 'POST', body: JSON.stringify({ message: userMsg.content, context: ctx })
+    });
+    messages = [...messages, { role: 'assistant', content: res.response, timestamp: new Date() }];
+  } catch {
+    messages = [...messages, { role: 'assistant', content: generateLocalResponse(userMsg.content, ctx), timestamp: new Date() }];
+  }
+  loadingAI = false;
+  render();
+}
+
+function render() {
+  app.innerHTML = `
+    <div style="margin-bottom: 1.5rem;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 1.875rem; color: #38324f; margin: 0 0 0.25rem;">Asistente IA</h1>
+      <p style="font-size: 0.875rem; color: #7d7599;">${user.rol === 'admin' ? 'Acceso total a todos los proyectos' : 'Acceso limitado a tus proyectos'}</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; display: flex; flex-direction: column; height: calc(100vh - 280px); box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+      <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; border-bottom: 1px solid #e5d9e6;">
+        <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: linear-gradient(135deg, #a78bfa, #c084fc); display: flex; align-items: center; justify-content: center; color: white;">
+          <svg viewBox="0 0 24 24" fill="none" style="width: 1.25rem; height: 1.25rem;" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <div><h3 style="font-weight: 600; color: #38324f; margin: 0; font-size: 1rem;">BoomLab AI</h3><p style="font-size: 0.75rem; color: #7d7599; margin: 0;">${userProjects.length} proyectos cargados · ${user.rol}</p></div>
+      </div>
+      <div style="flex: 1; overflow-y: auto; padding: 1rem 1.5rem;">
+        ${messages.map((msg, i) => `
+          <div style="display: flex; ${msg.role === 'user' ? 'justify-content: flex-end;' : 'justify-content: flex-start;'} margin-bottom: 1rem;">
+            <div style="max-width: 85%; border-radius: 1rem; padding: 0.75rem 1rem; ${msg.role === 'user' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white;' : 'background: rgba(255,255,255,0.7); border: 1px solid #e5d9e6; color: #38324f;'}">
+              <p style="margin: 0; font-size: 0.875rem; white-space: pre-line;">${msg.content}</p>
+              <p style="margin: 0.25rem 0 0; font-size: 0.625rem; ${msg.role === 'user' ? 'color: rgba(255,255,255,0.7);' : 'color: #7d7599;'}">${new Date(msg.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+          </div>
+        `).join('')}
+        ${loadingAI ? `
+          <div style="display: flex; justify-content: flex-start; margin-bottom: 1rem;">
+            <div style="background: rgba(255,255,255,0.5); border: 1px solid #e5d9e6; border-radius: 1rem; padding: 0.75rem 1rem;">
+              <div style="display: flex; gap: 0.25rem;"><div style="width: 0.5rem; height: 0.5rem; background: #d0c8d8; border-radius: 50%; animation: bounce 1s infinite;"></div><div style="width: 0.5rem; height: 0.5rem; background: #d0c8d8; border-radius: 50%; animation: bounce 1s infinite 150ms;"></div><div style="width: 0.5rem; height: 0.5rem; background: #d0c8d8; border-radius: 50%; animation: bounce 1s infinite 300ms;"></div></div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+      <div style="padding: 1rem 1.5rem; border-top: 1px solid #e5d9e6;">
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="ia-input" value="${input}" placeholder="Pregunta sobre tus proyectos..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleSend()}" oninput="input=this.value" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; outline: none;">
+          <button onclick="handleSend()" ${loadingAI || !input.trim() ? 'disabled' : ''} style="padding: 0.75rem; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; border: none; border-radius: 0.75rem; cursor: pointer; opacity: ${loadingAI || !input.trim() ? 0.5 : 1};">
+            <svg viewBox="0 0 24 24" fill="none" style="width: 1.25rem; height: 1.25rem;" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+        <p style="font-size: 0.625rem; color: #7d7599; margin: 0.5rem 0 0; text-align: center;">Solo puedo acceder a información de tus proyectos autorizados</p>
+      </div>
+    </div>
+    <style>
+      @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); } 40% { transform: scale(1); } }
+    </style>
+  `;
+}
+
+(async () => {
+  await loadUserProjects();
+  messages = [{ role: 'assistant', content: getWelcomeMessage(user.rol), timestamp: new Date() }];
+  render();
+})();
+</script>

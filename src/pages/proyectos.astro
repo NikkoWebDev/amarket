@@ -1,0 +1,160 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Proyectos - BoomLab" description="Gestión de proyectos">
+  <div id="proyectos-root" class="min-h-screen p-4 sm:p-6" style="max-width: 1280px; margin: 0 auto;">
+    <div id="proyectos-app"></div>
+  </div>
+</DashboardLayout>
+
+<script>
+const API = window.location.origin + '/api';
+
+function api(url, opts = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers };
+  return fetch(url, { ...opts, headers }).then(async r => {
+    if (r.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; }
+    if (!r.ok) { const e = await r.json().catch(() => ({ error: 'Error' })); throw new Error(e.error || 'Error'); }
+    return r.json();
+  });
+}
+
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) window.location.href = '/login';
+
+const app = document.getElementById('proyectos-app');
+
+const STAGES = [
+  { id: 'pendiente', label: 'Pendiente', emoji: '📥', bg: 'bg-sky-50/80', border: 'border-sky-200/60', header: 'bg-sky-100/70', dot: 'bg-sky-400', text: 'text-sky-700', badge: 'bg-sky-100 text-sky-600' },
+  { id: 'en_proceso', label: 'En Proceso', emoji: '⚙️', bg: 'bg-violet-50/80', border: 'border-violet-200/60', header: 'bg-violet-100/70', dot: 'bg-violet-400', text: 'text-violet-700', badge: 'bg-violet-100 text-violet-600' },
+  { id: 'completado', label: 'Completado', emoji: '✅', bg: 'bg-emerald-50/80', border: 'border-emerald-200/60', header: 'bg-emerald-100/70', dot: 'bg-emerald-400', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-600' },
+];
+
+let projects = [];
+let selectedProject = null;
+let search = '';
+
+async function loadProjects() {
+  try { projects = await api(API + '/proyectos'); render(); }
+  catch (e) { console.error(e); }
+}
+
+async function loadProjectDetail(id) {
+  try { selectedProject = await api(API + '/proyectos/' + id); render(); }
+  catch (e) { console.error(e); }
+}
+
+async function handleStatusChange(idEtapa, nuevoEstado) {
+  try {
+    await api(API + '/etapas/' + idEtapa, { method: 'PUT', body: JSON.stringify({ estado: nuevoEstado }) });
+    if (selectedProject) loadProjectDetail(selectedProject.id_proyecto);
+    else loadProjects();
+  } catch (e) { alert(e.message || 'Error'); }
+}
+
+function render() {
+  const filtered = projects.filter(p =>
+    p.titulo?.toLowerCase().includes(search.toLowerCase()) ||
+    p.nombre_cliente?.toLowerCase().includes(search.toLowerCase())
+  );
+  const byStage = STAGES.reduce((acc, s) => { acc[s.id] = filtered.filter(p => { const e = p.etapas?.[0]; return e?.estado === s.id; }); return acc; }, {});
+
+  app.innerHTML = `
+    <div style="margin-bottom: 2rem;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 1.875rem; color: #38324f; margin: 0 0 0.5rem;">Mis Proyectos</h1>
+      <p style="font-size: 0.875rem; color: #7d7599;">${user?.nombre} · ${user?.rol}</p>
+    </div>
+    ${!selectedProject ? `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div><h2 style="font-family: 'Playfair Display', serif; color: #38324f; font-size: 1.5rem; margin: 0;">Proyectos</h2><p style="font-size: 0.75rem; color: #7d7599; margin: 0.25rem 0 0;">${projects.length} proyectos activos</p></div>
+        <div style="position: relative;">
+          <input type="text" placeholder="Buscar proyecto…" value="${search}" oninput="search=this.value;render()" style="padding: 0.625rem 1rem; padding-left: 2.5rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.8); font-size: 0.875rem; color: #38324f; width: 16rem;">
+        </div>
+      </div>
+      <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem;">
+        ${STAGES.map(s => {
+          const cards = byStage[s.id] || [];
+          return `
+            <div style="flex: 1; min-width: 260px; max-width: 320px; background: ${s.bg || '#f8f5f9'}; border: 1px solid ${s.border || '#e5d9e6'}; border-radius: 1.5rem; overflow: hidden;">
+              <div style="background: ${s.header || '#f0e8f0'}; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid ${s.border || '#e5d9e6'};">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span>${s.emoji}</span>
+                  <span style="font-size: 0.75rem; font-weight: 700; color: ${s.text || '#38324f'}; text-transform: uppercase; letter-spacing: 0.05em;">${s.label}</span>
+                </div>
+                <span style="background: ${s.badge || '#f0e8f0'}; color: ${s.text || '#38324f'}; font-size: 0.6875rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 999px;">${cards.length}</span>
+              </div>
+              <div style="padding: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; max-height: calc(100vh - 300px); overflow-y: auto;">
+                ${cards.length === 0 ? '<div style="text-align: center; padding: 2rem 0; color: #b0a5c0; font-size: 0.75rem;">Sin proyectos</div>' : cards.map(p => `
+                  <div onclick="loadProjectDetail(${p.id_proyecto})" style="background: rgba(255,255,255,0.9); border-radius: 1rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 12px rgba(60,38,74,0.06); cursor: pointer; transition: all 0.3s;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                      <div style="width: 2rem; height: 2rem; border-radius: 0.75rem; background: linear-gradient(135deg, #8b5cf6, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 700;">${(p.nombre_cliente?.substring(0,2) || 'CL').toUpperCase()}</div>
+                      <span style="background: ${s.badge || '#f0e8f0'}; color: ${s.text || '#38324f'}; font-size: 0.625rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 999px;">${s.label}</span>
+                    </div>
+                    <h3 style="font-size: 0.875rem; font-weight: 600; color: #38324f; margin: 0 0 0.25rem;">${p.titulo}</h3>
+                    <p style="font-size: 0.6875rem; color: #7d7599; margin: 0 0 0.75rem;">${p.nombre_cliente || 'Cliente'}</p>
+                    <div style="height: 0.375rem; background: rgba(0,0,0,0.05); border-radius: 999px; overflow: hidden;">
+                      <div style="height: 100%; border-radius: 999px; background: linear-gradient(90deg, #f66aac, #c48afc); width: ${p.etapas?.[0]?.estado === 'completado' ? 100 : p.etapas?.[0]?.estado === 'en_proceso' ? 50 : 0}%; transition: width 0.7s;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.375rem;">
+                      <span style="font-size: 0.625rem; color: #7d7599;">Progreso</span>
+                      <span style="font-size: 0.625rem; font-weight: 700; color: #38324f;">${p.etapas?.[0]?.estado === 'completado' ? 100 : p.etapas?.[0]?.estado === 'en_proceso' ? 50 : 0}%</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.25rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(229,217,230,0.5); font-size: 0.625rem; color: #7d7599;">
+                      <span>${new Date(p.fecha_creacion).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : renderProjectDetail()}
+  `;
+}
+
+function renderProjectDetail() {
+  if (!selectedProject) return '';
+  const etapa = selectedProject.etapas?.[0] || { estado: 'pendiente', descripcion: 'Sin etapa', id_etapa: null };
+  const progress = etapa.estado === 'completado' ? 100 : etapa.estado === 'en_proceso' ? 50 : 0;
+
+  return `
+    <button onclick="selectedProject=null;render()" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #7d7599; background: none; border: none; cursor: pointer; margin-bottom: 1rem;">
+      <svg viewBox="0 0 16 16" fill="none" style="width: 1rem; height: 1rem;" stroke="currentColor" stroke-width="2"><path d="M10 12l-4-4 4-4" /><path d="M6 8h8" /></svg>
+      Volver a proyectos
+    </button>
+    <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(245,220,233,0.8);">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="width: 3rem; height: 3rem; border-radius: 1rem; background: linear-gradient(135deg, #8b5cf6, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; font-weight: 700;">${(selectedProject.nombre_cliente?.substring(0,2) || 'CL').toUpperCase()}</div>
+        <div><h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #38324f; margin: 0;">${selectedProject.titulo}</h2><p style="font-size: 0.875rem; color: #7d7599; margin: 0;">${selectedProject.nombre_cliente || 'Cliente'}</p></div>
+      </div>
+      <div style="background: white; border-radius: 1rem; padding: 1rem;">
+        <p style="font-size: 0.75rem; color: #7d7599; margin: 0 0 0.25rem;">Cliente</p>
+        <p style="font-weight: 600; color: #38324f; margin: 0;">${selectedProject.nombre_cliente || 'Cliente'}</p>
+      </div>
+      <div style="background: white; border-radius: 1rem; padding: 1rem; margin-top: 1rem;">
+        <p style="font-size: 0.75rem; color: #7d7599; margin: 0 0 0.5rem;">Progreso</p>
+        <div style="height: 0.5rem; background: rgba(0,0,0,0.05); border-radius: 999px; overflow: hidden;">
+          <div style="height: 100%; border-radius: 999px; background: linear-gradient(90deg, #10b981, #34d399); width: ${progress}%;"></div>
+        </div>
+        <p style="text-align: right; font-size: 0.75rem; font-weight: 700; color: #38324f; margin: 0.25rem 0 0;">${progress}%</p>
+      </div>
+      <div style="background: white; border-radius: 1rem; padding: 1rem; margin-top: 1rem;">
+        <p style="font-size: 0.75rem; color: #7d7599; margin: 0 0 0.5rem;">Etapa Actual</p>
+        <p style="font-weight: 600; color: #38324f; margin: 0 0 0.75rem;">${etapa.descripcion}</p>
+        ${(user?.rol === 'empleado' || user?.rol === 'admin') && etapa.id_etapa ? `
+          <div style="display: flex; gap: 0.5rem;">
+            ${STAGES.map(s => `
+              <button onclick="handleStatusChange(${etapa.id_etapa},'${s.id}')" style="flex: 1; padding: 0.5rem 0.75rem; border-radius: 0.75rem; border: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; ${etapa.estado === s.id ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white;' : 'background: #f0e8f0; color: #625b7e;'}">${s.label}</button>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+loadProjects();
+</script>

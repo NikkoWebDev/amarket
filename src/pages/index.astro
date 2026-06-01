@@ -1,0 +1,230 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout>
+  <div class="page-bg" aria-hidden="true" />
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <header class="landing-header" id="landing-header">
+    <nav class="landing-nav" aria-label="Navegación principal">
+      <a class="landing-brand" href="#inicio" aria-label="Inicio BoomLab">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><path d="M14 34c9 0 9-14 19-14 5 0 9 3 9 7 0 8-14 7-14 15 0 4 4 7 9 7" /><path d="M13 46c3-10 18-6 25-1" /></svg>
+        </span>
+        <span>BoomLab</span>
+      </a>
+      <button class="menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false" id="menu-btn">
+        <span /><span />
+      </button>
+      <div class="landing-menu" id="landing-menu">
+        <a href="#propuesta">Propuesta</a>
+        <a href="#mis-vision">Misión</a>
+        <a href="#valores">Valores</a>
+        <a href="#personalidad">Personalidad</a>
+        <a href="#publico">Público</a>
+      </div>
+      <a class="landing-login-link" href="/login">Entrar</a>
+    </nav>
+  </header>
+
+  <main id="contenido">
+    <section class="landing-hero" id="inicio">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow anim">Innovación y estilo que marca tendencia</p>
+          <h1 class="hero-title anim">Ideas explosivas para marcas que quieren crecer.</h1>
+          <p class="hero-lead anim">Campañas publicitarias creativas e innovadoras que generan impacto real para marcas y emprendedores de Sogamoso y Boyacá.</p>
+          <div class="actions anim">
+            <a class="btn primary" href="/login">Crear cuenta</a>
+            <a class="btn secondary" href="#propuesta">Ver propuesta</a>
+          </div>
+        </div>
+        <div class="hero-card-wrap anim">
+          <article class="hero-card" id="float-card">
+            <div class="mark" aria-hidden="true">
+              <svg viewBox="0 0 64 64"><path d="M14 34c9 0 9-14 19-14 5 0 9 3 9 7 0 8-14 7-14 15 0 4 4 7 9 7" /><path d="M13 46c3-10 18-6 25-1" /></svg>
+            </div>
+            <h2>BoomLab</h2>
+            <p>Laboratorio creativo de campañas</p>
+            <div class="mini-ui" aria-hidden="true">
+              <i /><i /><b>Hacer BOOM</b>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="propuesta">
+      <div class="container narrow center">
+        <p class="eyebrow anim">Propuesta de valor</p>
+        <h2 class="title anim">Creatividad, estrategia y tecnología para campañas que llaman la atención y generan resultados.</h2>
+        <p class="text anim">BoomLab ofrece un servicio cercano, entendiendo las necesidades del mercado local, con una visión amplia para que cada marca pueda brillar dentro y fuera de la región.</p>
+      </div>
+    </section>
+
+    <section class="scrolly" id="mis-vision">
+      <div class="scrolly-sticky">
+        <div class="container scrolly-grid">
+          <div class="steps">
+            <article class="step active" data-index="0">
+              <span>01</span><h3>Misión</h3><p>Transformar ideas en experiencias visuales y estratégicas que conecten con las personas y potencien el crecimiento de los clientes.</p>
+            </article>
+            <article class="step" data-index="1">
+              <span>02</span><h3>Visión 2030</h3><p>Ser la agencia creativa más reconocida de Boyacá por generar ideas explosivas, efectivas y competitivas.</p>
+            </article>
+            <article class="step" data-index="2">
+              <span>03</span><h3>Nombre</h3><p>"Boom" transmite emoción, sorpresa, alegría, euforia y optimismo. "Lab" representa laboratorio, experimento y creación.</p>
+            </article>
+          </div>
+          <aside class="showcase" aria-hidden="true">
+            <div class="showcase-card" id="showcase-card">
+              <small data-tag>Misión</small>
+              <h3 data-title>Impacto real</h3>
+              <p data-copy>Campañas creativas e innovadoras para destacar marcas y emprendedores.</p>
+              <div class="bars"><i /><i /><i /><i /></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="valores">
+      <div class="container">
+        <p class="eyebrow anim">Valores</p>
+        <h2 class="title anim">La energía creativa de BoomLab tiene una base clara.</h2>
+        <div class="cards">
+          <article class="card anim"><span>01</span><h3>Creatividad sin límites</h3><p>Ideas frescas y originales.</p></article>
+          <article class="card anim"><span>02</span><h3>Impacto</h3><p>Todo lo que hacemos debe dejar huella.</p></article>
+          <article class="card anim"><span>03</span><h3>Compromiso local</h3><p>Potenciamos el talento y las marcas de la región.</p></article>
+          <article class="card anim"><span>04</span><h3>Innovación constante</h3><p>Probamos nuevas herramientas y tendencias.</p></article>
+          <article class="card anim"><span>05</span><h3>Honestidad y transparencia</h3><p>Relaciones claras y de confianza.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section soft" id="personalidad">
+      <div class="container two-col">
+        <div>
+          <p class="eyebrow anim">Personalidad</p>
+          <h2 class="title anim">Juvenil, fresca, motivadora y atrevida.</h2>
+          <p class="text anim">BoomLab es creativa, explosiva, cercana, apasionada e innovadora. Su voz es positiva, clara, directa y con energía.</p>
+        </div>
+        <div class="chips anim">
+          <span>Creativa</span><span>Explosiva</span><span>Cercana</span><span>Apasionada</span><span>Innovadora</span><span>Épica</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section" id="publico">
+      <div class="container two-col">
+        <div>
+          <p class="eyebrow anim">Público objetivo</p>
+          <h2 class="title anim">Para marcas que quieren diferenciarse.</h2>
+        </div>
+        <div class="list">
+          <article class="list-item anim"><b>Emprendedores</b><p>Pequeñas empresas de Sogamoso y Boyacá que necesitan publicidad creativa.</p></article>
+          <article class="list-item anim"><b>Negocios locales</b><p>Restaurantes, tiendas, gimnasios, clubes deportivos y más.</p></article>
+          <article class="list-item anim"><b>Marcas jóvenes</b><p>Marcas modernas que buscan viralidad en redes sociales.</p></article>
+          <article class="list-item anim"><b>Empresas tradicionales</b><p>Negocios que quieren actualizar su imagen con estrategias digitales.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section cta-section">
+      <div class="container cta anim">
+        <p class="eyebrow">Haz que tu marca haga BOOM</p>
+        <h2>Primero enamora. Después convierte.</h2>
+        <p>Una landing profesional presenta la marca antes del login y guía al usuario hacia la acción.</p>
+        <div class="actions centered"><a class="btn primary" href="/login">Empezar ahora</a><a class="btn secondary" href="/login">Iniciar sesión</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-footer">
+    <div class="container footer-inner">
+      <p><strong>BoomLab</strong> — Innovación y estilo que marca tendencia.</p>
+      <a href="#inicio">Arriba ↑</a>
+    </div>
+  </footer>
+</Layout>
+
+<script>
+  const header = document.getElementById('landing-header');
+  const menuBtn = document.getElementById('menu-btn');
+  const landingMenu = document.getElementById('landing-menu');
+  const floatCard = document.getElementById('float-card');
+  const showcaseCard = document.getElementById('showcase-card');
+
+  if (header) {
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      header.style.transform = y > lastScroll && y > 100 ? 'translateY(-120%)' : 'translateY(0)';
+      lastScroll = y;
+
+      const scrolly = document.querySelector('.scrolly');
+      if (scrolly) {
+        const rect = scrolly.getBoundingClientRect();
+        const h = scrolly.offsetHeight - window.innerHeight;
+        if (h > 0) {
+          const pct = Math.max(0, Math.min(1, -rect.top / h));
+          const idx = Math.min(2, Math.floor(pct * 3));
+          document.querySelectorAll('.step').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+          });
+          if (showcaseCard) {
+            const s = 1 + pct * 0.04;
+            showcaseCard.style.transform = `scale(${s})`;
+            showcaseCard.style.opacity = 0.5 + pct * 0.5;
+          }
+        }
+      }
+    }, { passive: true });
+  }
+
+  if (menuBtn && landingMenu) {
+    menuBtn.addEventListener('click', () => {
+      const open = menuBtn.getAttribute('aria-expanded') === 'true';
+      menuBtn.setAttribute('aria-expanded', !open);
+      landingMenu.classList.toggle('open', !open);
+      document.body.classList.toggle('menu-open', !open);
+    });
+
+    landingMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        menuBtn.setAttribute('aria-expanded', 'false');
+        landingMenu.classList.remove('open');
+        document.body.classList.remove('menu-open');
+      });
+    });
+  }
+
+  if (floatCard) {
+    let raf;
+    window.addEventListener('mousemove', (e) => {
+      const rect = floatCard.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / 20;
+      const dy = (e.clientY - cy) / 20;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        floatCard.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      });
+    });
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('anim-visible');
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  document.querySelectorAll('.anim').forEach((el) => observer.observe(el));
+</script>

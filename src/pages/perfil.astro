@@ -1,0 +1,97 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Perfil - BoomLab" description="Perfil de usuario">
+  <div id="perfil-root" class="min-h-screen p-4 sm:p-6 lg:p-8" style="max-width: 1280px; margin: 0 auto;">
+    <div id="perfil-app"></div>
+  </div>
+</DashboardLayout>
+
+<script>
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) window.location.href = '/login';
+
+const app = document.getElementById('perfil-app');
+
+function getRoleLabel(rol) {
+  return { admin: 'Administrador', empleado: 'Empleado', cliente: 'Cliente' }[rol] || rol;
+}
+
+function getRoleColor(rol) {
+  return { admin: 'linear-gradient(135deg, #a78bfa, #c084fc)', empleado: 'linear-gradient(135deg, #38bdf8, #06b6d4)', cliente: 'linear-gradient(135deg, #fbbf24, #f97316)' }[rol] || 'linear-gradient(135deg, #f66aac, #ff8bc3)';
+}
+
+const activities = [
+  { icon: 'edit', text: 'Actualizó perfil', time: 'Hace 2 horas', color: '#f66aac' },
+  { icon: 'check', text: 'Tarea finalizada: Landing UI', time: 'Ayer, 4:30 PM', color: '#e9509d' },
+  { icon: 'cloud', text: 'Deploy a producción', time: 'Oct 12, 2023', color: '#a78bfa' },
+];
+
+function render() {
+  const rolColor = getRoleColor(user.rol);
+  app.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; margin-bottom: 3rem;">
+      <div style="position: relative;">
+        <div style="width: 120px; height: 120px; padding: 4px; border-radius: 50%; background: ${rolColor};">
+          <div style="width: 100%; height: 100%; border-radius: 50%; border: 4px solid white; overflow: hidden; display: flex; align-items: center; justify-content: center; background: ${rolColor}; color: white; font-size: 2.25rem; font-weight: 700;">
+            ${user.nombre?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2.25rem; color: #38324f; margin: 0 0 0.5rem;">${user.nombre}</h1>
+        <span style="display: inline-flex; padding: 0.25rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; color: white; background: ${rolColor};">${getRoleLabel(user.rol)}</span>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+      <div>
+        <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 1.5rem; display: flex; justify-content: space-between; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <div><p style="font-size: 0.75rem; font-weight: 600; color: #7d7599; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Proyectos</p><p style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #f66aac; margin: 0.25rem 0 0;">12</p></div>
+          </div>
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 1.5rem; display: flex; justify-content: space-between; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <div><p style="font-size: 0.75rem; font-weight: 600; color: #7d7599; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Tareas</p><p style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #e9509d; margin: 0.25rem 0 0;">148</p></div>
+          </div>
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 1.5rem; display: flex; justify-content: space-between; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <div><p style="font-size: 0.75rem; font-weight: 600; color: #7d7599; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Actividad</p><p style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #a78bfa; margin: 0.25rem 0 0;">94%</p></div>
+          </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem; font-size: 1.25rem;">Actividad Reciente</h3>
+          ${activities.map(a => `
+            <div style="display: flex; gap: 1rem; align-items: start; margin-bottom: 1rem; padding-left: 0.5rem;">
+              <span style="width: 24px; height: 24px; background: white; border-radius: 50%; border: 2px solid ${a.color}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"></span>
+              <div><p style="font-weight: 600; color: #38324f; margin: 0; font-size: 0.875rem;">${a.text}</p><p style="font-size: 0.75rem; color: #7d7599; margin: 0;">${a.time}</p></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem; font-size: 1.5rem;"><span style="color: #f66aac;">👤</span> Información de Perfil</h3>
+          <form id="profile-form" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Nombre</label><input type="text" id="pf-nombre" value="${user.nombre || ''}" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Email</label><input type="email" id="pf-email" value="${user.email || ''}" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;" disabled></div>
+            </div>
+            <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Bio</label><textarea rows="4" id="pf-bio" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box; resize: none;">${user.bio || 'Sin descripción aún.'}</textarea></div>
+          </form>
+        </div>
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem; font-size: 1.5rem;"><span style="color: #e9509d;">🔒</span> Seguridad</h3>
+          <form id="password-form" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Actual</label><input type="password" placeholder="••••••••" id="pw-current" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Nueva</label><input type="password" placeholder="Nueva" id="pw-new" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+              <div><label style="font-size: 0.875rem; font-weight: 600; color: #7d7599; margin-bottom: 0.5rem; display: block;">Confirmar</label><input type="password" placeholder="Confirmar" id="pw-confirm" style="width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f; box-sizing: border-box;"></div>
+            </div>
+            <button type="submit" style="align-self: flex-start; padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(246,106,172,0.25);">Cambiar Contraseña</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+}
+render();
+</script>

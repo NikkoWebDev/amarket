@@ -1,0 +1,223 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Dashboard - BoomLab" description="Panel de administración">
+  <div id="admin-root" class="min-h-screen p-4 sm:p-6 lg:p-8" style="max-width: 1280px; margin: 0 auto;">
+    <div id="admin-app"></div>
+  </div>
+</DashboardLayout>
+
+<script>
+const API = window.location.origin + '/api';
+
+function apiRequest(url, options = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options.headers };
+  return fetch(url, { ...options, headers }).then(async r => {
+    if (r.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/'; }
+    if (!r.ok) { const e = await r.json().catch(() => ({ error: 'Error' })); throw new Error(e.error || 'Error'); }
+    return r.json();
+  });
+}
+
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) { window.location.href = '/login'; }
+
+const app = document.getElementById('admin-app');
+
+function render() {
+  let state = { activeTab: 'overview', users: [], projects: [], message: '', form: { nombre: '', email: '', password: '', rol: 'empleado' }, projForm: { titulo: '', id_cliente: '' }, stats: { total: 0, active: 0, completed: 0, tasks: 0 } };
+
+  async function loadData() {
+    try {
+      let usersRes = user?.rol === 'admin' ? await apiRequest(API + '/auth/users') : [];
+      let projectsRes = [];
+      if (user?.rol === 'admin') projectsRes = await apiRequest(API + '/proyectos');
+      else if (user?.rol === 'cliente') {
+        const all = await apiRequest(API + '/proyectos');
+        projectsRes = all.filter(p => p.id_cliente === user.id_usuario);
+      } else if (user?.rol === 'empleado') {
+        try {
+          const assignments = await apiRequest(API + '/asignaciones');
+          const ids = assignments.filter(a => a.id_empleado === user.id_usuario).map(a => a.id_proyecto);
+          const all = await apiRequest(API + '/proyectos');
+          projectsRes = all.filter(p => ids.includes(p.id));
+        } catch { projectsRes = []; }
+      }
+      const total = projectsRes.length;
+      const active = projectsRes.filter(p => p.estado === 'en_proceso').length;
+      const completed = projectsRes.filter(p => p.estado === 'completado').length;
+      state = { ...state, users: usersRes, projects: projectsRes, stats: { total, active, completed, tasks: total * 4 } };
+      renderUI();
+    } catch (e) { console.error(e); }
+  }
+
+  function renderUI() {
+    const { activeTab, stats, message, users, projects, form, projForm } = state;
+    const isAdmin = user?.rol === 'admin';
+    const clientes = users.filter(u => u.rol === 'cliente');
+    const recentProjects = [...projects].sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion)).slice(0, 5);
+    const formatDate = (d) => new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    app.innerHTML = `
+      <header style="display: flex; flex-direction: column; justify-content: space-between; align-items: start; gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div>
+          <h1 style="font-family: 'Playfair Display', serif; font-size: 2.25rem; color: #38324f; margin: 0 0 0.5rem;">¡Hola, ${user?.nombre?.split(' ')[0]}! 👋</h1>
+          <p style="color: #7d7599; font-size: 0.875rem;">${new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} — ${stats.active > 0 ? `Tienes ${stats.active} proyectos activos` : 'Sin proyectos activos'}</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">${isAdmin ? `<button onclick="switchTab('users')" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.7); color: #f66aac; font-weight: 600; cursor: pointer; font-size: 0.875rem;">+ Nuevo Usuario</button>` : ''}<button onclick="${isAdmin ? "switchTab('projects')" : "window.location.href='/proyectos'"}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; font-size: 0.875rem; box-shadow: 0 8px 24px rgba(246,106,172,0.25);">+ Nuevo Proyecto</button></div>
+      </header>
+      ${message ? `<div style="margin-bottom: 1.5rem; background: rgba(236,253,245,0.8); border: 1px solid #a7f3d0; border-radius: 1rem; padding: 1rem; color: #059669; font-size: 0.875rem; text-align: center;">${message}</div>` : ''}
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-radius: 1rem; padding: 0.375rem; border: 1px solid rgba(245,220,233,0.8); overflow-x: auto;">
+        <button onclick="switchTab('overview')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'overview' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Vista General</button>
+        ${isAdmin ? `<button onclick="switchTab('users')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'users' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Usuarios</button>
+        <button onclick="switchTab('projects')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'projects' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Proyectos</button>` : ''}
+      </div>
+      ${activeTab === 'overview' ? renderOverview(stats, projects, recentProjects, isAdmin, user) : ''}
+      ${activeTab === 'users' && isAdmin ? renderUsers(users, form, clientes) : ''}
+      ${activeTab === 'projects' && isAdmin ? renderProjects(projects, projForm, clientes, formatDate) : ''}
+    `;
+  }
+
+  function renderOverview(stats, projects, recentProjects, isAdmin, user) {
+    return `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        ${['Total Proyectos', stats.total, 'primary'], ['Activos', stats.active, 'secondary'], ['Completados', stats.completed, 'success'], ['Tareas Pendientes', stats.tasks, 'warning'].map(([label, value, color]) => `
+          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+            <h3 style="font-size: 0.875rem; color: #7d7599; margin: 0 0 0.25rem;">${label}</h3>
+            <p style="font-size: 1.875rem; font-family: 'Playfair Display', serif; font-weight: 700; color: #38324f; margin: 0;">${value}</p>
+          </div>
+        `).join('')}
+      </div>
+      ${stats.total === 0 && !isAdmin ? `
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-left: 4px solid #f66aac; border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+          <div><h4 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 0.25rem; font-size: 1.25rem;">Sin Proyectos Asignados</h4><p style="color: #7d7599; margin: 0;">${user?.rol === 'cliente' ? 'Aún no tienes proyectos. Contacta al administrador.' : 'No tienes proyectos asignados.'}</p></div>
+        </div>
+      ` : ''}
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem;">Rendimiento Semanal</h3>
+          <div style="height: 200px; display: flex; align-items: flex-end; gap: 0.75rem;">
+            ${['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].map((d,i) => {
+              const h = [65,85,45,95,70,30,20][i];
+              return `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"><div style="width: 100%; background: rgba(246,106,172,0.1); border-radius: 999px; position: relative; height: 12rem;"><div style="position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #f66aac, #ff8bc3); border-radius: 999px; transition: height 0.5s; height: ${h}%;"></div></div><span style="font-size: 0.75rem; color: #7d7599;">${d}</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1rem;">Proyectos Recientes</h3>
+          ${recentProjects.length > 0 ? recentProjects.map(p => `
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem; cursor: pointer; border-radius: 0.75rem;" onclick="window.location.href='/proyectos'">
+              <div style="width: 2.5rem; height: 2.5rem; border-radius: 1rem; background: linear-gradient(135deg, #f66aac, #ff8bc3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">${p.titulo?.charAt(0)?.toUpperCase() || 'P'}</div>
+              <div style="flex: 1; min-width: 0;"><h4 style="margin: 0; font-size: 0.875rem; font-weight: 600; color: #38324f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.titulo}</h4><p style="margin: 0; font-size: 0.75rem; color: #7d7599;">${p.nombre_cliente || ''}</p></div>
+              <span style="padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; ${p.estado === 'completado' ? 'background: #d1fae5; color: #059669;' : p.estado === 'en_proceso' ? 'background: #ede9fe; color: #7c3aed;' : 'background: #e0f2fe; color: #0284c7;'}">${p.estado === 'completado' ? 'Completado' : p.estado === 'en_proceso' ? 'En Proceso' : 'Pendiente'}</span>
+            </div>
+          `).join('') : '<p style="color: #7d7599; text-align: center;">No hay proyectos aún</p>'}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderUsers(users, form, clientes) {
+    return `
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+        <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem;">Crear Usuario</h3>
+        <form onsubmit="handleCreateUser(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <input name="nombre" placeholder="Nombre completo" value="${form.nombre}" required style="padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f;">
+            <input name="email" type="email" placeholder="Email" value="${form.email}" required style="padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <input name="password" type="password" placeholder="Contraseña" value="${form.password}" required style="padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f;">
+            <select name="rol" style="padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f;">
+              <option value="empleado">Empleado</option>
+              <option value="cliente">Cliente</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button type="submit" style="align-self: flex-start; padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(246,106,172,0.25);">Crear Usuario</button>
+        </form>
+      </div>
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+        <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1rem;">Lista de Usuarios (${users.length})</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead><tr style="border-bottom: 1px solid #e5d9e6;"><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Nombre</th><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Email</th><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Rol</th></tr></thead>
+            <tbody>${users.map(u => `
+              <tr style="border-bottom: 1px solid #f0e8f0;">
+                <td style="padding: 0.75rem 0; font-size: 0.875rem; color: #38324f;">${u.nombre}</td>
+                <td style="padding: 0.75rem 0; font-size: 0.875rem; color: #38324f;">${u.email}</td>
+                <td style="padding: 0.75rem 0;"><span style="padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; ${u.rol === 'admin' ? 'background: #ede9fe; color: #7c3aed;' : u.rol === 'empleado' ? 'background: #e0f2fe; color: #0284c7;' : 'background: #d1fae5; color: #059669;'}">${u.rol}</span></td>
+              </tr>
+            `).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderProjects(projects, projForm, clientes, formatDate) {
+    return `
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+        <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1.5rem;">Crear Proyecto</h3>
+        <form onsubmit="handleCreateProject(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+          <input name="titulo" placeholder="Título del proyecto" value="${projForm.titulo}" required style="padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f;">
+          <select name="id_cliente" required style="padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); font-size: 0.875rem; color: #38324f;">
+            <option value="">Seleccionar cliente</option>
+            ${clientes.map(c => `<option value="${c.id_usuario}">${c.nombre} (${c.email})</option>`).join('')}
+          </select>
+          <button type="submit" style="align-self: flex-start; padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(246,106,172,0.25);">Crear Proyecto</button>
+        </form>
+      </div>
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
+        <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 1rem;">Proyectos (${projects.length})</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead><tr style="border-bottom: 1px solid #e5d9e6;"><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Título</th><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Cliente</th><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Estado</th><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Creado</th><th style="text-align: left; font-size: 0.75rem; color: #7d7599; padding-bottom: 0.75rem;">Acciones</th></tr></thead>
+            <tbody>${projects.map(p => `
+              <tr style="border-bottom: 1px solid #f0e8f0;">
+                <td style="padding: 0.75rem 0; font-size: 0.875rem; color: #38324f;">${p.titulo}</td>
+                <td style="padding: 0.75rem 0; font-size: 0.875rem; color: #7d7599;">${p.nombre_cliente}</td>
+                <td style="padding: 0.75rem 0;"><span style="padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; ${p.estado === 'completado' ? 'background: #d1fae5; color: #059669;' : p.estado === 'en_proceso' ? 'background: #ede9fe; color: #7c3aed;' : 'background: #e0f2fe; color: #0284c7;'}">${p.estado === 'completado' ? 'Completado' : p.estado === 'en_proceso' ? 'En Proceso' : 'Pendiente'}</span></td>
+                <td style="padding: 0.75rem 0; font-size: 0.875rem; color: #7d7599;">${formatDate(p.fecha_creacion)}</td>
+                <td style="padding: 0.75rem 0;"><button onclick="deleteProject(${p.id_proyecto})" style="padding: 0.375rem 0.75rem; border-radius: 0.75rem; border: none; background: #fef2f2; color: #dc2626; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Eliminar</button></td>
+              </tr>
+            `).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  window.switchTab = (tab) => { state = { ...state, activeTab: tab }; renderUI(); };
+  window.handleCreateUser = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = { nombre: formData.get('nombre'), email: formData.get('email'), password: formData.get('password'), rol: formData.get('rol') };
+    try {
+      await apiRequest(API + '/auth/register', { method: 'POST', body: JSON.stringify(data) });
+      state = { ...state, message: 'Usuario creado exitosamente', form: { nombre: '', email: '', password: '', rol: 'empleado' } };
+      loadData();
+    } catch (err) { state = { ...state, message: err.message }; renderUI(); }
+  };
+  window.handleCreateProject = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = { titulo: formData.get('titulo'), id_cliente: parseInt(formData.get('id_cliente')) };
+    try {
+      await apiRequest(API + '/proyectos', { method: 'POST', body: JSON.stringify(data) });
+      state = { ...state, message: 'Proyecto creado exitosamente', projForm: { titulo: '', id_cliente: '' } };
+      loadData();
+    } catch (err) { state = { ...state, message: err.message }; renderUI(); }
+  };
+  window.deleteProject = async (id) => {
+    if (!confirm('¿Eliminar este proyecto?')) return;
+    try { await apiRequest(API + '/proyectos/' + id, { method: 'DELETE' }); loadData(); }
+    catch (err) { state = { ...state, message: err.message }; renderUI(); }
+  };
+
+  loadData();
+}
+render();
+</script>
