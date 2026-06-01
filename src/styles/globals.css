@@ -472,6 +472,9 @@ body.menu-open {
 
 .footer-inner p { margin: 0; }
 .footer-inner a { color: var(--muted); text-decoration: none; }
+.footer-links { display: flex; align-items: center; gap: 1rem; }
+.footer-social { position: relative; display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .85rem; border-radius: 999px; background: rgba(246,106,172,0.08); color: #f66aac !important; font-weight: 600; font-size: .8125rem; transition: background .2s; }
+.footer-social:hover { background: rgba(246,106,172,0.18); }
 
 /* Animations */
 .anim {

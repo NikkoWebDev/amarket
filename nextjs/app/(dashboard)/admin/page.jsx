@@ -65,6 +65,7 @@ export default function Dashboard() {
   const [message, setMessage] = useState('');
   const [form, setForm] = useState({ nombre: '', email: '', password: '', rol: 'empleado' });
   const [projForm, setProjForm] = useState({ titulo: '', id_cliente: '' });
+  const [instagram, setInstagram] = useState({ profile: null, posts: [], loading: false });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -162,6 +163,21 @@ export default function Dashboard() {
     }
   };
 
+  const loadInstagramData = async () => {
+    if (instagram.posts.length > 0) return;
+    setInstagram({ ...instagram, loading: true });
+    try {
+      const data = await api.get('/api/instagram/posts');
+      setInstagram({ profile: data.profile, posts: data.posts, loading: false });
+    } catch {
+      setInstagram({ profile: null, posts: [], loading: false });
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'instagram') loadInstagramData();
+  }, [activeTab]);
+
   const clientes = users.filter((u) => u.rol === 'cliente');
   const empleados = users.filter((u) => u.rol === 'empleado');
   
@@ -247,6 +263,16 @@ export default function Dashboard() {
               </button>
             </>
           )}
+          <button 
+            className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold font-body transition-all whitespace-nowrap ${
+              activeTab === 'instagram' 
+                ? 'bg-gradient-to-r from-petal-400 to-blush-500 text-white shadow-soft-md' 
+                : 'text-mist-400 hover:bg-petal-50'
+            }`}
+            onClick={() => setActiveTab('instagram')}
+          >
+            Instagram
+          </button>
         </div>
 
         {/* Vista General Tab */}
@@ -506,6 +532,55 @@ export default function Dashboard() {
                 </table>
               </div>
             </GlassCard>
+          </div>
+        )}
+
+        {/* Instagram Tab */}
+        {activeTab === 'instagram' && (
+          <div className="space-y-6">
+            {instagram.loading ? (
+              <div className="text-center py-16 text-mist-500 font-body">Cargando Instagram...</div>
+            ) : !instagram.profile ? (
+              <GlassCard padding="large" className="text-center">
+                <div className="text-5xl mb-4">
+                  <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7d7599" strokeWidth="1.5" className="mx-auto">
+                    <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/>
+                  </svg>
+                </div>
+                <h3 className="font-display text-2xl text-mist-800 mb-2">Instagram</h3>
+                <p className="text-mist-500 mb-6">No se pudieron cargar las publicaciones de Instagram.</p>
+                <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-petal-400 to-blush-500 text-white font-bold hover:shadow-lg transition-shadow no-underline">Abrir Instagram →</a>
+              </GlassCard>
+            ) : (
+              <>
+                <div className="flex items-center gap-4 mb-8">
+                  <img src={instagram.profile.profilePicUrl} alt={instagram.profile.username} className="w-16 h-16 rounded-full object-cover border-2 border-white/40" />
+                  <div className="flex-1">
+                    <h3 className="font-display text-2xl text-mist-800 mb-1">{instagram.profile.fullName}</h3>
+                    <p className="text-mist-500 text-sm font-body">@{instagram.profile.username} · {instagram.profile.followers} seguidores</p>
+                  </div>
+                  <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-petal-100/80 bg-white/50 text-mist-700 font-bold hover:bg-white/80 transition-colors no-underline text-sm">Seguir en Instagram →</a>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {instagram.posts.map((p) => (
+                    <div key={p.shortcode} className="glass-card rounded-2xl overflow-hidden shadow-soft">
+                      <div className="relative pb-[100%] bg-mist-100">
+                        <img src={p.displayUrl} alt={p.caption?.substring(0, 100) || ''} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                        {p.isVideo && <span className="absolute top-3 right-3 bg-black/60 text-white rounded-lg px-2 py-1 text-xs">▶ Video</span>}
+                      </div>
+                      <div className="p-4">
+                        <p className="text-sm text-mist-700 font-body mb-3 line-clamp-2">{p.caption || 'Sin descripción'}</p>
+                        <div className="flex items-center gap-4 text-xs text-mist-500 font-body">
+                          <span>❤️ {p.likes}</span>
+                          <span>💬 {p.comments}</span>
+                          <a href={p.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-petal-500 font-bold no-underline hover:underline">Ver en IG</a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -238,7 +238,10 @@ export default function LandingPage() {
       <footer className="landing-footer">
         <div className="container footer-inner">
           <p><strong>BoomLab</strong> — Innovación y estilo que marca tendencia.</p>
-          <a href="#inicio">Arriba ↑</a>
+          <div className="footer-links">
+            <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" className="footer-social">Instagram</a>
+            <a href="#inicio">Arriba ↑</a>
+          </div>
         </div>
       </footer>
     </>
