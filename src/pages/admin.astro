@@ -27,7 +27,7 @@ if (!user) { window.location.href = '/login'; }
 const app = document.getElementById('admin-app');
 
 function render() {
-  let state = { activeTab: 'overview', users: [], projects: [], message: '', form: { nombre: '', email: '', password: '', rol: 'empleado' }, projForm: { titulo: '', id_cliente: '' }, stats: { total: 0, active: 0, completed: 0, tasks: 0 }, instagram: { profile: null, posts: [], loading: false } };
+  let state = { activeTab: 'overview', users: [], projects: [], message: '', form: { nombre: '', email: '', password: '', rol: 'empleado' }, projForm: { titulo: '', id_cliente: '' }, stats: { total: 0, active: 0, completed: 0, tasks: 0 } };
 
   async function loadData() {
     try {
@@ -73,12 +73,12 @@ function render() {
         <button onclick="switchTab('overview')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'overview' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Vista General</button>
         ${isAdmin ? `<button onclick="switchTab('users')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'users' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Usuarios</button>
         <button onclick="switchTab('projects')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'projects' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Proyectos</button>` : ''}
-        <button onclick="switchTab('instagram')" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; ${activeTab === 'instagram' ? 'background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; box-shadow: 0 4px 12px rgba(246,106,172,0.2);' : 'color: #7d7599; background: transparent;'}">Instagram</button>
+
       </div>
       ${activeTab === 'overview' ? renderOverview(stats, projects, recentProjects, isAdmin, user) : ''}
       ${activeTab === 'users' && isAdmin ? renderUsers(users, form, clientes) : ''}
       ${activeTab === 'projects' && isAdmin ? renderProjects(projects, projForm, clientes, formatDate) : ''}
-      ${activeTab === 'instagram' ? renderInstagram() : ''}
+
     `;
   }
 
@@ -192,73 +192,7 @@ function render() {
     `;
   }
 
-  function renderInstagram() {
-    const { profile, posts, loading } = state.instagram;
-    if (loading) {
-      return '<div style="text-align: center; padding: 4rem 1rem; color: #7d7599;">Cargando Instagram...</div>';
-    }
-    if (!profile) {
-      return `
-        <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; padding: 3rem 2rem; text-align: center; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
-          <div style="font-size: 3rem; margin-bottom: 1rem;">
-            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7d7599" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
-          </div>
-          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 0.5rem;">Instagram</h3>
-          <p style="color: #7d7599; margin: 0 0 1.5rem;">No se pudieron cargar las publicaciones de Instagram.</p>
-          <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 1rem; border: none; background: linear-gradient(135deg, #f66aac, #ff8bc3); color: white; font-weight: 600; cursor: pointer; text-decoration: none;">Abrir Instagram →</a>
-        </div>`;
-    }
-    return `
-      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-        <img src="${profile.profilePicUrl}" alt="${profile.username}" style="width: 4rem; height: 4rem; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.4);" />
-        <div style="flex: 1;">
-          <h3 style="font-family: 'Playfair Display', serif; color: #38324f; margin: 0 0 0.25rem;">${profile.fullName}</h3>
-          <p style="color: #7d7599; font-size: 0.875rem; margin: 0;">@${profile.username} · ${profile.followers} seguidores</p>
-        </div>
-        <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); color: #38324f; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.875rem;">Seguir en Instagram →</a>
-      </div>
-      <div id="instagram-embeds" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
-        ${posts.map(p => `
-          <div style="background: transparent; border-radius: 1.5rem; overflow: hidden;">
-            <blockquote class="instagram-media" data-instgrm-permalink="${p.url}" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:1rem; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  function loadInstagramEmbeds() {
-    if (window.instgrm) {
-      window.instgrm.Embeds.process();
-      return;
-    }
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = '//www.instagram.com/embed.js';
-    s.onload = () => window.instgrm && window.instgrm.Embeds.process();
-    document.body.appendChild(s);
-  }
-
-  async function loadInstagramData() {
-    if (state.instagram.posts.length > 0) { loadInstagramEmbeds(); return; }
-    state = { ...state, instagram: { ...state.instagram, loading: true } };
-    renderUI();
-    try {
-      const data = await apiRequest(API + '/instagram/posts');
-      state = { ...state, instagram: { profile: data.profile, posts: data.posts, loading: false } };
-      renderUI();
-      setTimeout(loadInstagramEmbeds, 100);
-    } catch (err) {
-      state = { ...state, instagram: { profile: null, posts: [], loading: false } };
-      renderUI();
-    }
-  }
-
-  window.switchTab = (tab) => {
-    state = { ...state, activeTab: tab };
-    if (tab === 'instagram') loadInstagramData();
-    renderUI();
-  };
+  window.switchTab = (tab) => { state = { ...state, activeTab: tab }; renderUI(); };
   window.handleCreateUser = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);

@@ -89,6 +89,34 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const container = document.getElementById('ig-feed');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/instagram/posts');
+        const data = await res.json();
+        if (!data.posts || data.posts.length === 0) {
+          container.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:#7d7599;grid-column:1/-1;">No se pudieron cargar las publicaciones.</div>';
+          return;
+        }
+        container.innerHTML = data.posts.map(p => `
+          <div style="background:transparent;border-radius:1.5rem;overflow:hidden;">
+            <blockquote class="instagram-media" data-instgrm-permalink="${p.url}" data-instgrm-version="14" style="background:#FFF;border:0;border-radius:1rem;box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15);margin:1px;max-width:540px;min-width:326px;padding:0;width:99.375%;width:-webkit-calc(100% - 2px);width:calc(100% - 2px);"></blockquote>
+          </div>
+        `).join('');
+        if (window.instgrm) { window.instgrm.Embeds.process(); return; }
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = '//www.instagram.com/embed.js';
+        s.onload = () => window.instgrm && window.instgrm.Embeds.process();
+        document.body.appendChild(s);
+      } catch {
+        if (container) container.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:#7d7599;grid-column:1/-1;">Error al cargar Instagram.</div>';
+      }
+    })();
+  }, []);
+
   return (
     <>
       <div className="page-bg" aria-hidden="true" />
@@ -117,6 +145,7 @@ export default function LandingPage() {
             <a href="#valores" onClick={() => setMenuOpen(false)}>Valores</a>
             <a href="#personalidad" onClick={() => setMenuOpen(false)}>Personalidad</a>
             <a href="#publico" onClick={() => setMenuOpen(false)}>Público</a>
+            <a href="#instagram" onClick={() => setMenuOpen(false)}>Instagram</a>
           </div>
           <a className="landing-login-link" href="/login">Entrar</a>
         </nav>
@@ -225,6 +254,15 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section className="landing-section" id="instagram">
+          <div className="container">
+            <p className="eyebrow anim">Instagram</p>
+            <h2 className="title anim">Síguenos en <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" style={{ background: 'linear-gradient(135deg,#f66aac,#ff8bc3)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>@boomlabpublicity1</a></h2>
+            <div id="ig-feed" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#7d7599', gridColumn: '1 / -1' }}>Cargando publicaciones de Instagram...</div>
+            </div>
+          </div>
+        </section>
         <section className="landing-section cta-section">
           <div className="container cta anim">
             <p className="eyebrow">Haz que tu marca haga BOOM</p>
