@@ -7,7 +7,7 @@ interface Props {
   image?: string;
 }
 
-const { title = 'BoomLab | Innovación y estilo que marca tendencia', description = 'Campañas publicitarias creativas e innovadoras para marcas y emprendedores de Sogamoso y Boyacá.', image = '/logo.png' } = Astro.props;
+const { title = 'BoomLab | Innovación y estilo que marca tendencia', description = 'Campañas publicitarias creativas e innovadoras para marcas y emprendedores de Sogamoso y Boyacá.', image = '/logo.svg' } = Astro.props;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : Astro.url;
 ---
 
