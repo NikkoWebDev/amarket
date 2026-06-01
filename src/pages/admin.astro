@@ -217,35 +217,37 @@ function render() {
         </div>
         <a href="https://www.instagram.com/boomlabpublicity1/" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 1rem; border: 1px solid rgba(245,220,233,0.8); background: rgba(255,255,255,0.5); color: #38324f; font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.875rem;">Seguir en Instagram →</a>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+      <div id="instagram-embeds" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
         ${posts.map(p => `
-          <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 1.5rem; overflow: hidden; box-shadow: 0 10px 30px -10px rgba(233,80,157,0.1);">
-            <div style="position: relative; padding-bottom: 100%; background: #f5f0f5;">
-              <img src="${p.displayUrl}" alt="${p.caption.substring(0, 100)}" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;" />
-              ${p.isVideo ? '<span style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.6); color: white; border-radius: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.75rem;">▶ Video</span>' : ''}
-            </div>
-            <div style="padding: 1rem;">
-              <p style="color: #38324f; font-size: 0.8125rem; margin: 0 0 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.caption || 'Sin descripción'}</p>
-              <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.75rem; color: #7d7599;">
-                <span>❤️ ${p.likes}</span>
-                <span>💬 ${p.comments}</span>
-                <a href="${p.url}" target="_blank" rel="noopener noreferrer" style="margin-left: auto; color: #f66aac; font-weight: 600; text-decoration: none;">Ver en IG</a>
-              </div>
-            </div>
+          <div style="background: transparent; border-radius: 1.5rem; overflow: hidden;">
+            <blockquote class="instagram-media" data-instgrm-permalink="${p.url}" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:1rem; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote>
           </div>
         `).join('')}
       </div>
     `;
   }
 
+  function loadInstagramEmbeds() {
+    if (window.instgrm) {
+      window.instgrm.Embeds.process();
+      return;
+    }
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = '//www.instagram.com/embed.js';
+    s.onload = () => window.instgrm && window.instgrm.Embeds.process();
+    document.body.appendChild(s);
+  }
+
   async function loadInstagramData() {
-    if (state.instagram.posts.length > 0) return;
+    if (state.instagram.posts.length > 0) { loadInstagramEmbeds(); return; }
     state = { ...state, instagram: { ...state.instagram, loading: true } };
     renderUI();
     try {
       const data = await apiRequest(API + '/instagram/posts');
       state = { ...state, instagram: { profile: data.profile, posts: data.posts, loading: false } };
       renderUI();
+      setTimeout(loadInstagramEmbeds, 100);
     } catch (err) {
       state = { ...state, instagram: { profile: null, posts: [], loading: false } };
       renderUI();
